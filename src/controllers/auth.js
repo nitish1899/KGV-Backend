@@ -12,12 +12,16 @@ import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.
 
 
 const register = asyncHandler(async (req, res) => {
-  const { fullName, phoneNumber, pin } = req.body;
+  const { fullName, phoneNumber, pin, confirmPin } = req.body;
 
   const existingUser = await Visitor.findOne({ phoneNumber });
 
   if (existingUser) {
     return res.status(400).json({ status: "failed", msg: "User already exists" });
+  }
+
+  if (pin !== confirmPin) {
+    return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
   }
 
   const hashPin = await bcrypt.hash(pin.toString(), 10);
