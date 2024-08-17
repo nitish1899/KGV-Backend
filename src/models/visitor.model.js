@@ -43,4 +43,10 @@ const visitorSchema = new Schema(
     }
 );
 
+// Create a partial index on the aadhar field
+visitorSchema.index({ aadhar: 1 }, { unique: true, partialFilterExpression: { aadhar: { $exists: true } } });
+
+// Create a partial index on the dlno field
+visitorSchema.index({ dlno: 1 }, { unique: true, partialFilterExpression: { dlno: { $exists: true } } });
+
 export const Visitor = mongoose.model("Visitor", visitorSchema);

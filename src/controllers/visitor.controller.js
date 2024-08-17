@@ -159,7 +159,120 @@ const paymentVerification = async (req, res) => {
                 razorpay_signature,
             });
 
-            return res.status(200).json({ success: true, razorpay_payment_id, message: "Payment Successful" });;
+            return res.status(200).json({ success: true, razorpay_payment_id, message: "Payment Successful" });
+
+            /*
+                       function sendEmailNotification() {
+                  
+                  // const transporter = nodemailer.createTransport({
+                  //   host: process.env.host,
+                  //   secure: false,
+                  //   port: process.env.port,
+                  //   service:process.env.service,
+                  //   auth: {
+                  //     user: process.env.user,
+                  //     pass: process.env.pass,
+                  //   },
+                  // });
+
+                  const transporter = nodemailer.createTransport({
+                    service: "gmail",
+                    auth: {
+                      user: "parveenprajapati9310@gmail.com", // Update with your Gmail address
+                      pass: "davajvjvmpyfjlri", // Update with your Gmail password
+                    },
+                  });
+
+                  
+                   
+                    const mailOptions = {
+                      from: "team@kgvl.co.in",
+                      to: "sales@kgvl.co.in",
+                      subject: "Customer booking Detail",
+                      html: `<p>New registration details:</p>
+                      <p>Name: ${firstname}</p>
+                       <p>Lastname: ${lastname}</p>
+                       <p>Email: ${email}</p>
+                       <p>Address: ${address}</p>
+                       <p>Phone No.: ${phonenumber}</p>
+                       <p>razorpay_order_id: ${razorpay_order_id}</p>
+                      <p>razorpay_payment_id: ${razorpay_payment_id}</p>`,
+                    };
+                  
+
+                    const mailOptions1 = {
+                        from: "team@kgvl.co.in",
+                        to: email,
+                        subject: "Customer booking Detail",
+                        html: `<p>New registration details:</p>
+                        <p>Name: ${firstname}</p>
+                         <p>Lastname: ${lastname}</p>
+                         <p>Email: ${email}</p>
+                         <p>Address: ${address}</p>
+                         <p>Phone No.: ${phonenumber}</p>
+                         <p>razorpay_order_id: ${razorpay_order_id}</p>
+                        <p>razorpay_payment_id: ${razorpay_payment_id}</p>`,
+                      };
+                  
+                    transporter.sendMail(mailOptions, function (error, info) {
+                      if (error) {
+                        console.log("Email error: " +error);
+                      } else {
+                        console.log("Email sent: " + info.response);
+                      }
+                    });
+                    transporter.sendMail(mailOptions1, function (error, info) {
+                        if (error) {
+                          console.log("Email error: " +error);
+                        } else {
+                          console.log("Email sent: " + info.response);
+                        }
+                      });
+                  }
+                  sendEmailNotification();
+                  
+              await deleteVistuserByEmail(email);
+            res.redirect(
+            `https://benevolent-queijadas-f11d8c.netlify.app/paymentsuccess?reference=${razorpay_payment_id}`);
+            
+       
+
+            } else {
+
+                function sendEmailNotification() {
+                    const transporter = nodemailer.createTransport({
+                      host: "smtpout.secureserver.net",
+                      secure: false,
+                      port: 465,
+                      service:" GoDaddy",
+                      auth: {
+                        user: "team@kgvl.co.in", // Update with your Gmail address
+                        pass: "Team@12345", // Update with your Gmail password
+                      },
+                    });
+                  
+                    const mailOptions = {
+                      from: "team@kgvl.co.in",
+                      to: email,
+                      subject: "Customer booking Detail",
+                      html: `<p>New registration details:</p>
+                             <p>payment failed</p>
+                             <p>again try</p>`,
+                    };
+                  
+                    transporter.sendMail(mailOptions, function (error, info) {
+                      if (error) {
+                        console.log("Email error: " +error);
+                      } else {
+                        console.log("Email sent: " + info.response);
+                      }
+                    });
+                  
+                  }
+                  sendEmailNotification();
+                  res.status(400).json({success: false,});
+  }
+            */
 
         } else {
             return res.status(400).json({ success: false, message: "Invalid signature" });
