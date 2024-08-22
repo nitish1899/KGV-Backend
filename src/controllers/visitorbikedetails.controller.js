@@ -44,7 +44,10 @@ const getVisitorBikeDetailById = asyncHandler(async (req, res) => {
     const { vehicleno } = req.params;
 
     // Fetch the bike details based on the ID
-    const visitorBikeDetails = await Visitorbikedetails.findOne({ vehicleno });
+    const visitorBikeDetails = await Visitorbikedetails.findOne({ vehicleno }).populate({
+        path: 'visitor',
+        select: ['-pin','-updatedAt','-createdAt','-__v']  // Exclude the pin field
+    });
 
     if (!visitorBikeDetails) {
         throw new ApiError(404, "Visitor bike detail not found");

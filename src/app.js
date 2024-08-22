@@ -18,17 +18,20 @@ app.use(cookieParser())
 
 //routes import
 
-import visitorRouter from './routes/visitor.routes.js'
-import visitorbikedetailsRouter from './routes/visitorbikedetails.routes.js'
-import uploadRouter from './routes/upload.routes.js'
-import authRoutes from './routes/auth.js'
+import visitorRouter from './routes/visitor.routes.js';
+import visitorbikedetailsRouter from './routes/visitorbikedetails.routes.js';
+import uploadRouter from './routes/upload.routes.js';
+import authRoutes from './routes/auth.js';
+import cartRouter from './routes/cart.route.js';
+import orderRouter from './routes/order.route.js';
 
 
 //routes declaration
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/visitor", visitorRouter)
 app.use("/api/v1/visitorbikedetails", visitorbikedetailsRouter)
-
+app.use("/api/cart", cartRouter);
+app.use("/api/order", orderRouter);
 
 app.use("/api", uploadRouter)
 
