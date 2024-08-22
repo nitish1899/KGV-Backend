@@ -36,6 +36,10 @@ const visitorSchema = new Schema(
         gender: {
             type: String,
             required: [true, "Gender is required"],
+        },
+        pan: {
+            type: String,
+            required: [true, "Gender is required"],
         }
     },
     {

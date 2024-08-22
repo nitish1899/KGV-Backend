@@ -12,7 +12,7 @@ import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.
 
 
 const register = asyncHandler(async (req, res) => {
-  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address } = req.body;
+  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender } = req.body;
 
   // Check if a user with the provided phone number already exists
   const existingUser = await Visitor.findOne({ phoneNumber });
@@ -37,6 +37,9 @@ const register = asyncHandler(async (req, res) => {
     aadhar,
     pan,
     address,
+    dlno,
+    dob,
+    gender
   });
 
   // Prepare the response data
@@ -47,40 +50,15 @@ const register = asyncHandler(async (req, res) => {
     aadhar: newUser.aadhar,
     pan: newUser.pan,
     address: newUser.address,
+    dlno: newUser.dlno,
+    dob: newUser.dob,
+    gender: newUser.gender,
   };
 
-  // Send the response
+
   return res.json(new ApiResponse(201, data, "User registered Successfully"));
 });
 
-// const register = asyncHandler(async (req, res) => {
-//   const { fullName, phoneNumber, pin, confirmPin } = req.body;
-
-//   const existingUser = await Visitor.findOne({ phoneNumber });
-
-//   if (existingUser) {
-//     return res.status(400).json({ status: "failed", msg: "User already exists" });
-//   }
-
-//   if (pin !== confirmPin) {
-//     return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
-//   }
-
-//   const hashPin = await bcrypt.hash(pin.toString(), 10);
-
-//   // Find and update the user if they exist, or create a new user if they don't
-//   const newUser = await Visitor.create(
-//     { phoneNumber, fullName, pin: hashPin },  // Find user by mobile number
-//   );
-
-//   const data = {
-//     userId: newUser._id,
-//     fullName: newUser.fullName,
-//     phoneNumber: newUser.phoneNumber,
-//   };
-
-//   return res.json(new ApiResponse(201, data, "User registered Successfully"));
-// })
 
 const login = asyncHandler(async (req, res) => {
   const { phoneNumber, pin } = req.body;

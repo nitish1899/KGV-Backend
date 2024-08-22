@@ -19,6 +19,8 @@ const visitorbikedetailsSchema = new Schema(
         },
         cc: {
             type: String,
+            enum: ['100', '125', '150'], 
+            required: [true, "cc is required"], 
         },
         threeYearPetrolCost: {
             type: Number,
