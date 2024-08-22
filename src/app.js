@@ -33,7 +33,7 @@ app.use("/api/v1/visitor", visitorRouter)
 app.use("/api/v1/visitorbikedetails", visitorbikedetailsRouter)
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
-app.use("/api/v1/bookingkit", bookingKitRouter)
+// app.use("/api/v1/bookingkit", bookingKitRouter)
 
 app.use('/api/kits', kitRoutes);
 

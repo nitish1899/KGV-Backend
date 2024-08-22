@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { itemSchema } from "./cart.model.js";
+import { itemSchema } from "./cartItems.model.js";
 
 const statusEnum = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
 

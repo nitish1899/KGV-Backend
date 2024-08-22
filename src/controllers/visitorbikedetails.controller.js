@@ -48,7 +48,7 @@ const getVisitorBikeDetailById = asyncHandler(async (req, res) => {
     // Fetch the bike details based on the ID
     const visitorBikeDetails = await Visitorbikedetails.findOne({ vehicleno }).populate({
         path: 'visitor',
-        select: ['-pin','-updatedAt','-createdAt','-__v']  // Exclude the pin field
+        select: ['-pin', '-updatedAt', '-createdAt', '-__v']  // Exclude the pin field
     });
 
     if (!visitorBikeDetails) {
@@ -86,8 +86,8 @@ const addKitToBikeDetail = asyncHandler(async (req, res) => {
     }
 
     // Add the kit to the bike details
-    if (!visitorBikeDetail.kits.includes(kitId)) {
-        visitorBikeDetail.kits.push(kitId);
+    if (!visitorBikeDetail.kit.includes(kitId)) {
+        visitorBikeDetail.kit.push(kitId);
         await visitorBikeDetail.save();
     }
 

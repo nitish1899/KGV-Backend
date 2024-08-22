@@ -1,7 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const itemSchema = new mongoose.Schema({
-    itemId: {
+    kit: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Kit",
+        required: true
+    },
+    name: {
         type: String,
         required: true
     },
@@ -9,12 +13,8 @@ const itemSchema = new mongoose.Schema({
         type: Number,  // Changed from String to Number
         required: true
     },
-    price: {
-        type: Number,  // Changed from String to Number
-        required: true
-    },
     addons: [{
-        addonId: {
+        addOnItemId: {
             type: String,
             required: true
         },
@@ -22,13 +22,10 @@ const itemSchema = new mongoose.Schema({
             type: Number,  // Changed from String to Number
             required: true
         },
-        price: {
-            type: Number,  // Changed from String to Number
-            required: true
-        },
     }],
-    visitorBikeDetails: {
-        type: mongoose.Schema.Types.ObjectId, ref: "Visitorbikedetails", required: true
+    price: {
+        type: Number,
+        required: true
     }
 }, {
     timestamps: true
@@ -41,7 +38,7 @@ const cartItemSchema = new mongoose.Schema({
     cart: {
         type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true
     },
-    items: itemSchema
+    item: itemSchema
 }, {
     timestamps: true
 });
