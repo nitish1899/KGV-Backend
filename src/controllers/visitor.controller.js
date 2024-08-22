@@ -1,100 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js"
 import { Visitor } from "../models/visitor.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt from "jsonwebtoken"
-import mongoose from "mongoose";
-import axios from "axios";
-import otpGenerator from 'otp-generator';
 import Razorpay from "razorpay";
 import { Payment } from "../models/payment.model.js";
 import crypto from "crypto";
 
-// const instance = new Razorpay({
-//     key_id: process.env.RAZORPAY_API_KEY,
-//     key_secret: process.env.RAZORPAY_APT_SECRET,
-// });
 
-// const checkout = async (req, res) => {
-//     const options = {
-//         amount: Number(req.body.amount * 100),
-//         currency: "INR",
-//         // note_key: "email sent succefully to TWCPL"
-
-//     };
-//     const order = await instance.orders.create(options);
-
-//     res.status(200).json({
-//         success: true,
-//         order,
-//     });
-// };
-
-// // async function bookVehicle(req, res) {
-// //     const { dlno, uploadphoto, selectkit, addons, waveamount } = req.body;
-
-// // }
-
-// const paymentVerification = async (req, res) => {
-
-//     // try {
-
-//     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-//     const body = razorpay_order_id + "|" + razorpay_payment_id;
-//     const expectedSignature = crypto
-//         .createHmac("sha256", process.env.RAZORPAY_APT_SECRET)
-//         .update(body.toString())
-//         .digest("hex");
-
-
-//     console.log("sig received ", razorpay_signature);
-//     console.log("sig generated ", expectedSignature);
-//     const isAuthentic = razorpay_signature === expectedSignature;
-//     //  const isAuthentic = razorpay_order_id === razorpay_payment_id;
-
-//     console.log("payment done now checking");
-
-
-//     var instance = new Razorpay({ key_id: process.env.RAZORPAY_API_KEY, key_secret: process.env.RAZORPAY_APT_SECRET })
-//     var response = await instance.payments.fetch(razorpay_payment_id);
-
-//     console.log(response);
-
-//     console.log(response.notes.firstname);
-
-//     if (isAuthentic) {
-//         const firstname = response.notes.firstname;
-//         const lastname = response.notes.lastname;
-//         const email = response.notes.email;
-//         const address = response.notes.address;
-//         const phonenumber = response.notes.phonenumber;
-
-//         // Database comes here
-//         await Payment.create({
-//             firstname,
-//             lastname,
-//             email,
-//             address,
-//             phonenumber,
-//             razorpay_order_id,
-//             razorpay_payment_id,
-//             razorpay_signature
-//         });
-
-//         res.redirect(
-//             `https://benevolent-queijadas-f11d8c.netlify.app/paymentsuccess?reference=${razorpay_payment_id}`);
-
-
-
-//     } else {
-
-
-//         res.status(400).json({ success: false, });
-//     }
-
-
-// };
 
 const instance = new Razorpay({
     key_id: process.env.RAZORPAY_API_KEY,

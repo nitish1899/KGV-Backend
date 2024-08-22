@@ -12,33 +12,75 @@ import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.
 
 
 const register = asyncHandler(async (req, res) => {
-  const { fullName, phoneNumber, pin, confirmPin } = req.body;
+  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address } = req.body;
 
+  // Check if a user with the provided phone number already exists
   const existingUser = await Visitor.findOne({ phoneNumber });
 
   if (existingUser) {
     return res.status(400).json({ status: "failed", msg: "User already exists" });
   }
 
+  // Validate pin and confirmPin
   if (pin !== confirmPin) {
     return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
   }
 
+  // Hash the pin
   const hashPin = await bcrypt.hash(pin.toString(), 10);
 
-  // Find and update the user if they exist, or create a new user if they don't
-  const newUser = await Visitor.create(
-    { phoneNumber, fullName, pin: hashPin },  // Find user by mobile number
-  );
+  // Create a new user with the additional fields
+  const newUser = await Visitor.create({
+    fullName,
+    phoneNumber,
+    pin: hashPin,
+    aadhar,
+    pan,
+    address,
+  });
 
+  // Prepare the response data
   const data = {
     userId: newUser._id,
     fullName: newUser.fullName,
     phoneNumber: newUser.phoneNumber,
+    aadhar: newUser.aadhar,
+    pan: newUser.pan,
+    address: newUser.address,
   };
 
+  // Send the response
   return res.json(new ApiResponse(201, data, "User registered Successfully"));
-})
+});
+
+// const register = asyncHandler(async (req, res) => {
+//   const { fullName, phoneNumber, pin, confirmPin } = req.body;
+
+//   const existingUser = await Visitor.findOne({ phoneNumber });
+
+//   if (existingUser) {
+//     return res.status(400).json({ status: "failed", msg: "User already exists" });
+//   }
+
+//   if (pin !== confirmPin) {
+//     return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
+//   }
+
+//   const hashPin = await bcrypt.hash(pin.toString(), 10);
+
+//   // Find and update the user if they exist, or create a new user if they don't
+//   const newUser = await Visitor.create(
+//     { phoneNumber, fullName, pin: hashPin },  // Find user by mobile number
+//   );
+
+//   const data = {
+//     userId: newUser._id,
+//     fullName: newUser.fullName,
+//     phoneNumber: newUser.phoneNumber,
+//   };
+
+//   return res.json(new ApiResponse(201, data, "User registered Successfully"));
+// })
 
 const login = asyncHandler(async (req, res) => {
   const { phoneNumber, pin } = req.body;
@@ -96,6 +138,41 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
   }
 })
 
+
+const sendExistingVisitorOtp = asyncHandler(async (req, res) => {
+  try {
+    const otp = otpGenerator.generate(4, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
+    const phoneNumber = req.body.phoneNumber;
+    
+    // Check if the phone number exists
+    const existedUser = await Visitor.findOne({ phoneNumber });
+
+    if (!existedUser) {
+      throw new ApiError(404, "Phone number not found");
+    }
+
+    // Send OTP to the existing phone number
+    await axios.get('https://www.fast2sms.com/dev/bulkV2', {
+      params: {
+        authorization: process.env.FAST2SMS_API_KEY,
+        variables_values: otp,
+        route: 'otp',
+        numbers: phoneNumber
+      }
+    });
+
+    return res.status(201).json(
+      new ApiResponse(201, { otp }, "OTP sent successfully!")
+    );
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(400).json(
+      new ApiResponse(400, { error }, "Failed to send OTP")
+    );
+  }
+});
+
+
 const forgotPin = asyncHandler(async (req, res) => {
   const { phoneNumber, pin, confirmPin } = req.body;
 
@@ -125,4 +202,4 @@ const forgotPin = asyncHandler(async (req, res) => {
   res.status(200).json({ status: 'success', msg: 'Pin has been updated successfully' });
 })
 
-export { register, login, sendVisitorOtp, forgotPin };
+export { register, login, sendVisitorOtp, sendExistingVisitorOtp, forgotPin };

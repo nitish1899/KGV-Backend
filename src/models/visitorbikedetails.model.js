@@ -22,19 +22,20 @@ const visitorbikedetailsSchema = new Schema(
         },
         threeYearPetrolCost: {
             type: Number,
-            default: 0,  // Provide a default value
+            default: 0,  
         },
         threeYearKitCost: {
             type: Number,
-            default: 0,  // Provide a default value
+            default: 0,  
         },
         petrolKitCostDifference: {
             type: Number,
-            default: 0,  // Provide a default value
+            default: 0,  
         },
         visitor: {
             type : mongoose.Schema.Types.ObjectId, ref:"Visitor"
-        }
+        },
+        kits: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Kit' }],
     },
     {
         timestamps: true
