@@ -117,4 +117,20 @@ const deleteCartItem = asyncHandler(async (req, res) => {
 //     });
 // })
 
-export { addToCart, getCartItems, deleteCartItem };
+const getCart = asyncHandler(async (req, res) => {
+    if (!req.params.visitorId || !(req.params.visitorId.length)) {
+        throw new ApiError(400, 'Visitor id not found')
+    }
+
+    const visitor = await Visitor.findById(req.params.visitorId);
+
+    if (!visitor) {
+        throw new ApiError(400, 'Visitor not found');
+    }
+
+    const cart = await Cart.findOne({ visitor: req.params.visitorId });
+
+    return res.status(200).json({ cartId: cart._id })
+})
+
+export { addToCart, getCartItems, deleteCartItem, getCart };
