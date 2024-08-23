@@ -20,7 +20,7 @@ const addToCart = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Visitorbikedetails not found');
     }
 
-    console.log(visitorbikedetails);
+    // console.log(visitorbikedetails);
 
     const item = {
         kit: visitorbikedetails.kit[0]._id,
@@ -28,6 +28,7 @@ const addToCart = asyncHandler(async (req, res) => {
         quantity: 1,
         addons: [],
         price: visitorbikedetails.kit[0].price,
+        vehicleno: visitorbikedetails.vehicleno
     }
 
     let existingCart = cart;
@@ -66,7 +67,10 @@ const addToCart = asyncHandler(async (req, res) => {
 });
 
 const getCartItems = asyncHandler(async (req, res) => {
-    const cartItems = await CartItem.find({ cart: req.params.cartId });
+    const cartItems = await CartItem.find({ cart: req.params.cartId }).populate({
+        path: 'visitor',
+        select: ['-pin', '-updatedAt', '-createdAt', '-__v']  // Exclude the pin field
+    });
 
     if (!cartItems) {
         throw new ApiError('No items found. Please add items to your cart', 404);

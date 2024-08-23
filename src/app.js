@@ -25,6 +25,7 @@ import authRoutes from './routes/auth.js';
 import cartRouter from './routes/cart.route.js';
 import orderRouter from './routes/order.route.js';
 import kitRoutes from './routes/kit.routes.js';
+import { getbikes } from "./utils/bike.js"
 
 
 //routes declaration
@@ -39,6 +40,9 @@ app.use('/api/kits', kitRoutes);
 
 
 app.use("/api", uploadRouter)
+app.get("/api/bikes", (req, res) => {
+    return res.status(200).json({ bikes: getbikes() });
+});
 
 app.get("/api/getkey", (req, res) =>
     res.status(200).json({ key: process.env.RAZORPAY_API_KEY })

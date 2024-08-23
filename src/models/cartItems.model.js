@@ -10,7 +10,7 @@ const itemSchema = new mongoose.Schema({
         required: true
     },
     quantity: {
-        type: Number,  
+        type: Number,
         required: true
     },
     addons: [{
@@ -26,6 +26,10 @@ const itemSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true
+    },
+    vehicleno: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true
@@ -38,7 +42,7 @@ const cartItemSchema = new mongoose.Schema({
     cart: {
         type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true
     },
-    item: itemSchema
+    item: itemSchema,
 }, {
     timestamps: true
 });

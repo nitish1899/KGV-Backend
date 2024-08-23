@@ -1,4 +1,4 @@
-export const bikes = [
+const bikes = [
     {
         "bike": "Hero HF Deluxe",
         "cc": "100"
@@ -120,3 +120,7 @@ export const bikes = [
         "bike": "KTM RC 200",
         "cc": "150"
     }]
+
+export function getbikes() {
+    return bikes;
+}
