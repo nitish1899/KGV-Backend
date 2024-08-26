@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { checkout, paymentVerification, verifyKYC } from "../controllers/visitor.controller.js";
+import { checkout, paymentVerification, verifyKYC, getVisitor } from "../controllers/visitor.controller.js";
 // import { upload } from "../middlewares/multer.middleware.js"
 // import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
-router.route("/placeOrder").post(checkout)
-router.route("/verifyPayment").post(paymentVerification)
+// router.route("/placeOrder").post(checkout)
+// router.route("/verifyPayment").post(paymentVerification)
 router.route("/verifyKYC").post(verifyKYC)
+router.route("/details/:visitorId").get(getVisitor);
 
 // router.route("/bookVehicle").post(bookVehicle);
 

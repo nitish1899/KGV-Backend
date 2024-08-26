@@ -25,6 +25,7 @@ import authRoutes from './routes/auth.js';
 import cartRouter from './routes/cart.route.js';
 import orderRouter from './routes/order.route.js';
 import kitRoutes from './routes/kit.routes.js';
+import bookingKitRouter from './routes/bookingKit.routes.js';
 import { getbikes } from "./utils/bike.js"
 
 
@@ -34,7 +35,7 @@ app.use("/api/v1/visitor", visitorRouter)
 app.use("/api/v1/visitorbikedetails", visitorbikedetailsRouter)
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
-// app.use("/api/v1/bookingkit", bookingKitRouter)
+app.use("/api/v1/bookingkit", bookingKitRouter)
 
 app.use('/api/kits', kitRoutes);
 

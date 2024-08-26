@@ -5,9 +5,14 @@ const cartSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, ref: "Visitor", required: true
     },
     totalPrice: {
-        type: Number,  // Changed from String to Number
+        type: Number,
         required: true
-    }
+    },
+    totalItems: {
+        type: Number,  // Changed from String to Number
+        required: true,
+        default: 0
+    },
 }, {
     timestamps: true
 });

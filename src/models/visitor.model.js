@@ -39,7 +39,11 @@ const visitorSchema = new Schema(
         },
         pan: {
             type: String,
-            required: [true, "Gender is required"],
+            required: [true, "pan is required"],
+        },
+        email: {
+            type: String,
+            required: [true, "email is required"],
         }
     },
     {

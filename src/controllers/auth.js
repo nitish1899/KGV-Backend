@@ -12,7 +12,11 @@ import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.
 
 
 const register = asyncHandler(async (req, res) => {
-  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender } = req.body;
+  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email } = req.body;
+
+  if ([fullName, phoneNumber, pin, confirmPin, aadhar, pan, dlno, dob, gender, email].some(field => !field)) {
+    throw new ApiError(400, "All fields are required");
+  }
 
   // Check if a user with the provided phone number already exists
   const existingUser = await Visitor.findOne({ phoneNumber });
@@ -39,7 +43,8 @@ const register = asyncHandler(async (req, res) => {
     address,
     dlno,
     dob,
-    gender
+    gender,
+    email
   });
 
   // Prepare the response data
@@ -53,6 +58,7 @@ const register = asyncHandler(async (req, res) => {
     dlno: newUser.dlno,
     dob: newUser.dob,
     gender: newUser.gender,
+    email: newUser.email,
   };
 
 
@@ -121,7 +127,7 @@ const sendExistingVisitorOtp = asyncHandler(async (req, res) => {
   try {
     const otp = otpGenerator.generate(4, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
     const phoneNumber = req.body.phoneNumber;
-    
+
     // Check if the phone number exists
     const existedUser = await Visitor.findOne({ phoneNumber });
 
