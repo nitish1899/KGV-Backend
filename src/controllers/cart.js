@@ -64,7 +64,6 @@ const addToCart = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ cartItemId: cartItem._id });
 });
-
 const getCartItems = asyncHandler(async (req, res) => {
     const cartItems = await CartItem.find({ cart: req.params.cartId }).populate({
         path: 'visitor',

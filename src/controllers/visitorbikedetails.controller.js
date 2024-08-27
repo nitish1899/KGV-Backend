@@ -4,7 +4,7 @@ import { Visitorbikedetails } from '../models/visitorbikedetails.model.js';
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Visitor } from "../models/visitor.model.js";
-import { Kit } from '../models/Kit.model.js'; // Import the Kit model
+import { Kit } from '../models/Kit.model.js'; 
 
 const createVisitorBikeDetail = asyncHandler(async (req, res) => {
     const { vehicleno, runningPerDay, fueltype, model, cc, visitorId } = req.body;
