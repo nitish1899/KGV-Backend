@@ -3,10 +3,10 @@ import { addToCart, getCartItems, deleteCartItem, getCart, deleteCartItemByCartI
 
 const router = express.Router();
 
-router.route('/item').post(addToCart).delete(deleteCartItem);
+router.route('/item').post(addToCart);
 router.route('/item/:cartId').get(getCartItems);
 router.route('/:visitorId').get(getCart);
-// router.delete('/delete', deleteCartItem);
+router.delete('/delete', deleteCartItem);
 router.delete('/cart/item/:cartItemId', deleteCartItemByCartItemId);
 router.get('/summary/:visitorId', getCartSummary);
 

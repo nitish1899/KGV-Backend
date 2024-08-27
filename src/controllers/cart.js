@@ -6,7 +6,7 @@ import { Visitor } from "../models/visitor.model.js";
 import { Visitorbikedetails } from "../models/visitorbikedetails.model.js";
 
 const addToCart = asyncHandler(async (req, res) => {
-    const { visitorId, visitorbikedetailsId } = req.body;
+    const { visitorId, visitorbikedetailsId, addons } = req.body;
 
     const [visitor, visitorbikedetails, cart] = await Promise.all([
         Visitor.findById(visitorId), Visitorbikedetails.findById(visitorbikedetailsId).populate('kit'), Cart.findOne({ visitor: visitorId })
@@ -20,14 +20,23 @@ const addToCart = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Visitorbikedetails not found');
     }
 
+    const kitPrice = Number(visitorbikedetails.kit[0].price);
+    const totalPrice = addons && addons.length ? kitPrice +
+        addons.reduce((acc, item) => {
+            const addonItemPrice = Number(item.price) * Number(item.quantity);
+
+            return acc + addonItemPrice;
+        }, 0) : kitPrice;
+
     // console.log(visitorbikedetails);
 
     const item = {
         kit: visitorbikedetails.kit[0]._id,
         name: visitorbikedetails.kit[0].name,
         quantity: 1,
-        addons: [],
-        price: visitorbikedetails.kit[0].price,
+        addons: addons?.map(r => r) || [],
+        kitPrice,
+        totalPrice,
         vehicleno: visitorbikedetails.vehicleno
     }
 
@@ -42,20 +51,20 @@ const addToCart = asyncHandler(async (req, res) => {
     const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
 
     // Calculate the new total price for the cart
-    const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.price);
+    const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
 
     const totalItems = Number(existingCart.totalItems) + 1;
 
     // Update the cart's totalPrice with the new total
     await Cart.findOneAndUpdate(
         { _id: existingCart._id },
-        { totalPrice: cartTotalPrice },
         { totalPrice: cartTotalPrice, totalItems },
         { new: true }
     );
 
     return res.status(200).json({ cartItemId: cartItem._id });
 });
+
 const getCartItems = asyncHandler(async (req, res) => {
     const cartItems = await CartItem.find({ cart: req.params.cartId }).populate({
         path: 'visitor',
@@ -63,20 +72,21 @@ const getCartItems = asyncHandler(async (req, res) => {
     });
 
     if (!cartItems || cartItems.length === 0) {
-        throw new ApiError('No items found. Please add items to your cart', 404);
+        throw new ApiError(400, 'No items found. Please add items to your cart');
     }
 
     // Calculate total price and total items
     const totalPrice = cartItems.reduce((acc, cartitem) => {
-        let itemTotalPrice = Number(cartitem.item.price) * Number(cartitem.item.quantity);
-        // Uncomment if you have addons with prices to add to total
-        // cartitem.item.addons.forEach(addon => {
+        // let itemTotalPrice = Number(cartitem.item.price) * Number(cartitem.item.quantity);
+        // // Uncomment if you have addons with prices to add to total
+        // cartitem.addons.forEach(addon => {
         //     itemTotalPrice += Number(addon.price) * Number(addon.quantity);
         // });
-        return acc + itemTotalPrice;
+        return acc + cartitem.item.totalPrice;
     }, 0);
 
-    const totalItems = cartItems.reduce((acc, cartitem) => acc + Number(cartitem.item.quantity), 0);
+    // const totalItems = cartItems.reduce((acc, cartitem) => acc + Number(cartitem.item.quantity), 0);
+    const totalItems = cartItems.length;
 
     return res.status(200).json({ cartItems, totalPrice, totalItems });
 });
@@ -93,7 +103,7 @@ const deleteCartItem = asyncHandler(async (req, res) => {
     const cartItems = await CartItem.find({ cart: cartId, visitor: visitorId });
 
     const totalPrice = cartItems.reduce((acc, cartitem) => {
-        let itemTotalPrice = Number(cartitem.item.price);
+        let itemTotalPrice = Number(cartitem.item.totalPrice);
         // item.addons.forEach(addon => {
         //     itemTotalPrice += Number(addon.price);
         // });
@@ -123,7 +133,7 @@ const getCart = asyncHandler(async (req, res) => {
     }
 
     const cart = await Cart.findOne({ visitor: req.params.visitorId });
-    
+
     return res.status(200).json({ cart });
 })
 
@@ -150,7 +160,7 @@ const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
 
     // Calculate the new total price
     const newTotalPrice = remainingCartItems.reduce((acc, item) => {
-        let itemTotalPrice = Number(item.item.price);
+        let itemTotalPrice = Number(item.item.totalPrice);
         // Uncomment below if you have addons in the cart items
         // item.item.addons.forEach(addon => {
         //     itemTotalPrice += Number(addon.price) * Number(addon.quantity);
@@ -182,7 +192,7 @@ const getCartSummary = asyncHandler(async (req, res) => {
 
     // Calculate total price and total items
     const totalPrice = cartItems.reduce((acc, cartitem) => {
-        let itemTotalPrice = Number(cartitem.item.price) * Number(cartitem.item.quantity);
+        let itemTotalPrice = Number(cartitem.item.totalPrice) * Number(cartitem.item.quantity);
         // Uncomment if you have addons with prices to add to total
         // cartitem.item.addons.forEach(addon => {
         //     itemTotalPrice += Number(addon.price) * Number(addon.quantity);

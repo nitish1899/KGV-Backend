@@ -4,7 +4,6 @@ import { itemSchema } from "./cartItems.model.js";
 const statusEnum = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
 
 const orderSchema = new mongoose.Schema({
-    orderId: { type: String, required: true },
     visitor: {
         type: mongoose.Schema.Types.ObjectId, ref: "Visitor", required: true
     },

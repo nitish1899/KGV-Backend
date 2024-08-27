@@ -14,23 +14,31 @@ const itemSchema = new mongoose.Schema({
         required: true
     },
     addons: [{
-        addOnItemId: {
+        name: {
             type: String,
             required: true
         },
         quantity: {
-            type: Number,  
+            type: Number,
+            required: true
+        },
+        price: {
+            type: Number,
             required: true
         },
     }],
-    price: {
+    kitPrice: {
         type: Number,
         required: true
     },
     vehicleno: {
         type: String,
         required: true
-    }
+    },
+    totalPrice: {
+        type: Number,
+        required: true
+    },
 }, {
     timestamps: true
 });

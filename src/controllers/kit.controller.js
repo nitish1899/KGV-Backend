@@ -6,18 +6,20 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 // Create a new kit
 const createKit = asyncHandler(async (req, res) => {
-    const { name, cost } = req.body;
+    const { name, price, addonItems } = req.body;
 
-    if (!name || cost === undefined) {
+    if (!name || price === undefined) {
         throw new ApiError(400, "Name and cost are required");
     }
 
     const existingKit = await Kit.findOne({ name });
+
     if (existingKit) {
         throw new ApiError(409, "Kit with this name already exists");
     }
 
-    const newKit = await Kit.create({ name, cost });
+    const newKit = await Kit.create({ name, price, addonItems: addonItems.map(r => r) });
+
     return res.status(201).json(new ApiResponse(201, newKit, "Kit created successfully"));
 });
 

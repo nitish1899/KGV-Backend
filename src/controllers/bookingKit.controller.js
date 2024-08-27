@@ -62,7 +62,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
             host: "smtpout.secureserver.net",
             secure: false,
             port: 465,
-            service: " GoDaddy",
+            // service: " GoDaddy",
             auth: {
                 user: process.env.GODADDY_EMAIL, // Update with your Gmail address
                 pass: process.env.GODADDY_PASSWORD, // Update with your Gmail password
@@ -110,7 +110,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions1 = {
                     from: "team@kgvl.co.in",
-                    to: paymentDetails.notes.email,
+                    to: "sales@kgvl.co.in",
                     subject: "Customer booking Detail",
                     html: `<p>New registration details:</p>
                                   <p> Full Name: ${paymentDetails.notes.fullName}</p>
