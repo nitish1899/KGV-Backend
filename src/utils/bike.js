@@ -98,10 +98,12 @@ const bikes = [
     }, {
         "bike": "Honda HORNET",
         "cc": "150"
-    }, {
-        "bike": "HERO XPULSE",
-        "cc": "200"
-    }, {
+    },
+    //  {
+    //     "bike": "HERO XPULSE",
+    //     "cc": "200"
+    // }, 
+    {
         "bike": "TVS Apache",
         "cc": "150"
     }, {
@@ -113,10 +115,12 @@ const bikes = [
     }, {
         "bike": "YAMAHA R15M",
         "cc": "150"
-    }, {
-        "bike": "Royel Enfield",
-        "cc": "300"
-    }, {
+    },
+    //  {
+    //     "bike": "Royel Enfield",
+    //     "cc": "300"
+    // },
+     {
         "bike": "KTM RC 200",
         "cc": "150"
     }]

@@ -13,6 +13,8 @@ const visitorbikedetailsSchema = new Schema(
         },
         fueltype: {
             type: String,
+            enum: ['Petrol', 'Diesel', 'CNG'],
+            required: [true, "Fuel type is required"],
         },
         model: {
             type: String,
