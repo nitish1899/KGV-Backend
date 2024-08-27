@@ -128,7 +128,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
                         console.log("Email sent: " + info.response);
                     }
                 });
-                
+
                 transporter.sendMail(mailOptions1, function (error, info) {
                     if (error) {
                         console.log("Email error: " + error);
@@ -147,16 +147,6 @@ const bookingVerification = asyncHandler(async (req, res) => {
             // return res.status(200).json({ success: true, razorpay_payment_id, message: "Payment Successful" });
         } else {
             function sendEmailNotification() {
-                const transporter = nodemailer.createTransport({
-                    host: "smtpout.secureserver.net",//
-                    secure: true,
-                    port: 465,
-                    // service: " GoDaddy",
-                    auth: {
-                        user: "team@kgvl.co.in", // Update with your Gmail address
-                        pass: "Team@kgvl123", // Update with your Gmail password
-                    },
-                });
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
