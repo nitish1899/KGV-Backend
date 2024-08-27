@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
-import { BookingKit } from "../models/BookingKit.model.js";
+import { Payment } from "../models/payment.model.js";
 import crypto from "crypto";
 
 const instance = new Razorpay({
@@ -75,7 +75,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
             console.log("paymentDetails:", paymentDetails);
 
             // Save payment details to BookingKit collection
-            const bookingKit = new BookingKit({
+            const bookingKit = new Payment({
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,

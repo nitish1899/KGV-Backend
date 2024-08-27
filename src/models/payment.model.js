@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema({
-    name: {
+    fullName: {
         type: String,
         required: true,
     },
-    email: {
+    phoneNumber: {
         type: String,
         required: true,
     },
@@ -13,7 +13,27 @@ const paymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    phonenumber: {
+    aadhar: {
+        type: String,
+        required: true,
+    },
+    dlno: {
+        type: String,
+        required: true,
+    },
+    dob: {
+        type: String,
+        required: true,
+    },
+    gender: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    amount: {
         type: String,
         required: true,
     },
@@ -29,7 +49,6 @@ const paymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
 });
 
 const Payment = mongoose.model("payment", paymentSchema);
