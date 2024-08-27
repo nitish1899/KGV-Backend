@@ -5,8 +5,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Visitor } from "../models/visitor.model.js";
 import { Visitorbikedetails } from "../models/visitorbikedetails.model.js";
 
-const addToCart = asyncHandler(async (req, res) => {
-    const { visitorId, visitorbikedetailsId, addons } = req.body;
+const addKitToCart = asyncHandler(async (req, res) => {
+    const { visitorId, visitorbikedetailsId } = req.body;
 
     const [visitor, visitorbikedetails, cart] = await Promise.all([
         Visitor.findById(visitorId), Visitorbikedetails.findById(visitorbikedetailsId).populate('kit'), Cart.findOne({ visitor: visitorId })
@@ -20,24 +20,14 @@ const addToCart = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Visitorbikedetails not found');
     }
 
-    const kitPrice = Number(visitorbikedetails.kit[0].price);
-    const totalPrice = addons && addons.length ? kitPrice +
-        addons.reduce((acc, item) => {
-            const addonItemPrice = Number(item.price) * Number(item.quantity);
-
-            return acc + addonItemPrice;
-        }, 0) : kitPrice;
-
-    // console.log(visitorbikedetails);
-
     const item = {
         kit: visitorbikedetails.kit[0]._id,
         name: visitorbikedetails.kit[0].name,
         quantity: 1,
-        addons: addons?.map(r => r) || [],
-        kitPrice,
-        totalPrice,
-        vehicleno: visitorbikedetails.vehicleno
+        addons: [],
+        kitPrice: Number(visitorbikedetails.kit[0].price),
+        totalPrice: Number(visitorbikedetails.kit[0].price),
+        vehicleno: visitorbikedetails.vehicleno,
     }
 
     let existingCart = cart;
@@ -64,6 +54,59 @@ const addToCart = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ cartItemId: cartItem._id });
 });
+
+const addExtraItemsToKit = asyncHandler(async (req, res) => {
+    const { cartItemId, addons, visitorId } = req.body;
+
+    if ([cartItemId, addons, visitorId].some(item => !item)) {
+        throw new ApiError(400, 'Please fill required fields');
+    }
+
+    const cartItem = await CartItem.findOne({ visitor: visitorId, _id: cartItemId });
+
+    if (!cartItem) {
+        throw new ApiError(400, 'No items found. Please add items to your cart');
+    }
+
+    const addonsTotalPrice = addons && addons.length ?
+        addons.reduce((acc, item) => {
+            const addonItemPrice = Number(item.price) * Number(item.quantity);
+
+            return acc + addonItemPrice;
+        }, 0) : 0;
+
+    const totalPrice = Number(Number(cartItem.item.kitPrice) + addonsTotalPrice);
+
+    const updatedCartItem = await CartItem.findOneAndUpdate(
+        { visitor: visitorId, _id: cartItemId },
+        { item: { ...cartItem.item, totalPrice, addons: addons.map(r => r) } }
+    );
+
+    if (!updatedCartItem) {
+        throw new ApiError(400, 'No items found. Please add items to your cart');
+    }
+
+    const existingCart = await Cart.findOne({ visitor: visitorId });
+
+    if (!existingCart) {
+        throw new ApiError(400, 'Cart not found');
+    }
+
+    // Calculate the new total price for the cart
+    const cartTotalPrice = Number(existingCart.totalPrice) + Number(addonsTotalPrice);
+
+
+    // Update the cart's totalPrice with the new total
+    await Cart.findOneAndUpdate(
+        { _id: existingCart._id },
+        { totalPrice: cartTotalPrice },
+        { new: true }
+    );
+
+    return res.status(200).json({ updatedCartItem });
+});
+
+
 const getCartItems = asyncHandler(async (req, res) => {
     const cartItems = await CartItem.find({ cart: req.params.cartId }).populate({
         path: 'visitor',
@@ -96,8 +139,6 @@ const deleteCartItem = asyncHandler(async (req, res) => {
     const { cartId, cartItemId, visitorId } = req.body;
 
     await CartItem.findOneAndDelete({ _id: cartItemId, cart: cartId, visitor: visitorId });
-
-
 
     const cartItems = await CartItem.find({ cart: cartId, visitor: visitorId });
 
@@ -136,8 +177,6 @@ const getCart = asyncHandler(async (req, res) => {
     return res.status(200).json({ cart });
 })
 
-
-
 const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
     const { cartItemId } = req.params;
 
@@ -173,9 +212,6 @@ const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: 'Cart item deleted successfully', cartId });
 });
 
-
-
-
 const getCartSummary = asyncHandler(async (req, res) => {
     const { visitorId } = req.params;
 
@@ -205,4 +241,4 @@ const getCartSummary = asyncHandler(async (req, res) => {
 });
 
 
-export { addToCart, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary };
+export { addExtraItemsToKit, addKitToCart, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary };
