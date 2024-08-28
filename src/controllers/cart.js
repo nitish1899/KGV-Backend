@@ -77,9 +77,17 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
 
     const totalPrice = Number(Number(cartItem.item.kitPrice) + addonsTotalPrice);
 
+    // console.log({ ...cartItem.item, totalPrice, addons: addons.map(r => r) });
+
     const updatedCartItem = await CartItem.findOneAndUpdate(
         { visitor: visitorId, _id: cartItemId },
-        { item: { ...cartItem.item, totalPrice, addons: addons.map(r => r) } }
+        {
+            $set: {
+                "item.totalPrice": totalPrice,
+                "item.addons": addons.map(r => r)
+            }
+        },
+        { new: true } // To return the updated document
     );
 
     if (!updatedCartItem) {
