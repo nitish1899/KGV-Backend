@@ -192,8 +192,8 @@ const bookingVerification = asyncHandler(async (req, res) => {
                     to: `${paymentDetails.notes.email}`,
                     subject: "Customer booking Detail",
                     html: `<p>New registration details:</p>
-                                       <p>payment failed</p>
-                                       <p>again try</p>`,
+                                       <p>Payment failed</p>
+                                       <p>Try again </p>`,
                 };
 
                 transporter.sendMail(mailOptions, function (error, info) {
