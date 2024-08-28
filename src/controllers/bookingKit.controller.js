@@ -60,7 +60,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
         const transporter = nodemailer.createTransport({
             host: "smtpout.secureserver.net",
-            secure: false,
+            secure: true,
             port: 465,
             // service: " GoDaddy",
             auth: {
@@ -102,30 +102,31 @@ const bookingVerification = asyncHandler(async (req, res) => {
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">Booking Confirmation</h2>
                             <p>Dear ${paymentDetails.notes.fullName},</p>
-                
+
                             <p>Thank you for your booking with us! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
-                
+
                             <h3 style="color: #333;">Booking Details</h3>
                             <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
                             <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
                             <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
                             <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
-                
+
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-                
+
                             <h3 style="color: #333;">Payment Information</h3>
                             <p><strong>Order ID:</strong> ${razorpay_order_id}</p>
                             <p><strong>Payment ID:</strong> ${razorpay_payment_id}</p>
-                
+
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-                
+
                             <p>Your booking is now confirmed, and we will be in touch with further details soon. If you have any questions or need assistance, please don't hesitate to reach out to our support team at <a href="mailto:support@kgvl.co.in" style="color: #4CAF50;">support@kgvl.co.in</a>.</p>
-                
+
                             <p>Thank you for choosing KGVL. We look forward to serving you!</p>
-                
+
                             <p style="color: #999; font-size: 12px;">&copy; 2024 KGVL. All rights reserved.</p>
                         </div>
                     `,
+
                 };
 
 
@@ -137,23 +138,23 @@ const bookingVerification = asyncHandler(async (req, res) => {
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #FF5722;">New Customer Booking</h2>
                             <p>A new customer has just completed a booking. Below are the details:</p>
-                
+
                             <h3 style="color: #333;">Customer Information</h3>
                             <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
                             <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
                             <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
                             <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
-                
+
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-                
+
                             <h3 style="color: #333;">Transaction Details</h3>
                             <p><strong>Razorpay Order ID:</strong> ${razorpay_order_id}</p>
                             <p><strong>Razorpay Payment ID:</strong> ${razorpay_payment_id}</p>
-                
+
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-                
+
                             <p style="color: #555;">Please process this order as soon as possible and update the relevant records.</p>
-                
+
                             <p style="color: #999; font-size: 12px;">&copy; 2024 KGVL. All rights reserved.</p>
                         </div>
                     `,

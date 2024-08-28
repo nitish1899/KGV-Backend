@@ -114,7 +114,7 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
         { new: true }
     );
 
-    return res.status(200).json(updatedCartItem);
+    return res.status(200).json({ updatedCartItem });
 });
 
 
@@ -154,9 +154,6 @@ const deleteCartItem = asyncHandler(async (req, res) => {
 
     const totalPrice = cartItems.reduce((acc, cartitem) => {
         let itemTotalPrice = Number(cartitem.item.totalPrice);
-        // item.addons.forEach(addon => {
-        //     itemTotalPrice += Number(addon.price);
-        // });
         return acc + itemTotalPrice;
     }, 0);
 
@@ -217,7 +214,7 @@ const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
     }, 0);
 
     // Update the cart with the new total price
-    await Cart.findByIdAndUpdate(cartId, { totalPrice: newTotalPrice }, { new: true });
+    await Cart.findByIdAndUpdate(cartId, { totalPrice: newTotalPrice, totalItems: remainingCartItems.length }, { new: true });
 
     return res.status(200).json({ message: 'Cart item deleted successfully', cartId });
 });
