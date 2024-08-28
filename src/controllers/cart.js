@@ -58,63 +58,6 @@ const addKitToCart = asyncHandler(async (req, res) => {
     return res.status(200).json({ cartItemId: cartItem._id });
 });
 
-// const addExtraItemsToKit = asyncHandler(async (req, res) => {
-//     const { cartItemId, addons, visitorId } = req.body;
-
-//     if ([cartItemId, addons, visitorId].some(item => !item)) {
-//         throw new ApiError(400, 'Please fill required fields');
-//     }
-
-//     const cartItem = await CartItem.findOne({ visitor: visitorId, _id: cartItemId });
-
-//     if (!cartItem) {
-//         throw new ApiError(400, 'No items found. Please add items to your cart');
-//     }
-
-//     const addonsTotalPrice = addons && addons.length ?
-//         addons.reduce((acc, item) => {
-//             const addonItemPrice = Number(item.price) * Number(item.quantity);
-
-//             return acc + addonItemPrice;
-//         }, 0) : 0;
-
-//     const totalPrice = Number(Number(cartItem.item.kitPrice) + addonsTotalPrice);
-
-//     const updatedCartItem = await CartItem.findOneAndUpdate(
-//         { visitor: visitorId, _id: cartItemId },
-//         {
-//             $set: {
-//                 "item.totalPrice": totalPrice,
-//                 "item.addons": addons.map(r => r)
-//             }
-//         },
-//         { new: true }
-//     );
-
-//     if (!updatedCartItem) {
-//         throw new ApiError(400, 'No items found. Please add items to your cart');
-//     }
-
-//     const existingCart = await Cart.findOne({ visitor: visitorId });
-
-//     if (!existingCart) {
-//         throw new ApiError(400, 'Cart not found');
-//     }
-
-//     // Calculate the new total price for the cart
-//     const cartTotalPrice = Number(existingCart.totalPrice) + Number(addonsTotalPrice);
-
-
-//     // Update the cart's totalPrice with the new total
-//     await Cart.findOneAndUpdate(
-//         { _id: existingCart._id },
-//         { totalPrice: cartTotalPrice },
-//         { new: true }
-//     );
-
-//     return res.status(200).json({ updatedCartItem });
-// });
-
 
 const addExtraItemsToKit = asyncHandler(async (req, res) => {
     const { cartItemId, addons, visitorId } = req.body;
@@ -171,9 +114,8 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
         { new: true }
     );
 
-    return res.status(200).json({ updatedCartItem });
+    return res.status(200).json(updatedCartItem);
 });
-
 
 
 const getCartItems = asyncHandler(async (req, res) => {
@@ -203,7 +145,6 @@ const getCartItems = asyncHandler(async (req, res) => {
 });
 
 
-
 const deleteCartItem = asyncHandler(async (req, res) => {
     const { cartId, cartItemId, visitorId } = req.body;
 
@@ -229,7 +170,6 @@ const deleteCartItem = asyncHandler(async (req, res) => {
 });
 
 
-
 const getCart = asyncHandler(async (req, res) => {
     if (!req.params.visitorId || !(req.params.visitorId.length)) {
         throw new ApiError(400, 'Visitor id not found')
@@ -243,8 +183,9 @@ const getCart = asyncHandler(async (req, res) => {
 
     const cart = await Cart.findOne({ visitor: req.params.visitorId });
 
-    return res.status(200).json({ cart });
+    return res.status(200).json(cart);
 })
+
 
 const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
     const { cartItemId } = req.params;
@@ -280,6 +221,7 @@ const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ message: 'Cart item deleted successfully', cartId });
 });
+
 
 const getCartSummary = asyncHandler(async (req, res) => {
     const { visitorId } = req.params;
