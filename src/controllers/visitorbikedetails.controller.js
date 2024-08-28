@@ -4,7 +4,7 @@ import { Visitorbikedetails } from '../models/visitorbikedetails.model.js';
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Visitor } from "../models/visitor.model.js";
-import { Kit } from '../models/Kit.model.js'; 
+import { Kit } from '../models/Kit.model.js';
 
 const createVisitorBikeDetail = asyncHandler(async (req, res) => {
     const { vehicleno, runningPerDay, fueltype, model, cc, visitorId } = req.body;
@@ -63,39 +63,43 @@ const getVisitorBikeDetailById = asyncHandler(async (req, res) => {
     }, "Visitor bike detail fetched successfully"));
 });
 
-const addKitToBikeDetail = asyncHandler(async (req, res) => {
-    const { vehicleno } = req.params;
-    const { kitId } = req.body;
+async function addKitToBikeDetail(kitId, vehicleno) {
+    try {
+        if (!kitId) {
+            throw new ApiError(400, "Kit ID is required");
+        }
 
-    if (!kitId) {
-        throw new ApiError(400, "Kit ID is required");
+        // Fetch the bike details and the kit
+        const [visitorBikeDetail, kit] = await Promise.all([
+            Visitorbikedetails.findOne({ vehicleno }),
+            Kit.findById(kitId)
+        ]);
+
+        if (!visitorBikeDetail) {
+            throw new ApiError(404, "Visitor bike detail not found");
+        }
+
+        if (!kit) {
+            throw new ApiError(404, "Kit not found");
+        }
+
+        // Add the kit to the bike details
+        if (!visitorBikeDetail.kit.includes(kitId)) {
+            visitorBikeDetail.kit.push(kitId);
+            await visitorBikeDetail.save();
+        }
+
+        return new ApiResponse(200, {
+            visitorBikeDetail,
+            message: "Kit added to bike details successfully"
+        });
+    } catch (error) {
+        throw new ApiError(400, error.message);
     }
 
-    // Fetch the bike details and the kit
-    const [visitorBikeDetail, kit] = await Promise.all([
-        Visitorbikedetails.findOne({ vehicleno }),
-        Kit.findById(kitId)
-    ]);
 
-    if (!visitorBikeDetail) {
-        throw new ApiError(404, "Visitor bike detail not found");
-    }
 
-    if (!kit) {
-        throw new ApiError(404, "Kit not found");
-    }
-
-    // Add the kit to the bike details
-    if (!visitorBikeDetail.kit.includes(kitId)) {
-        visitorBikeDetail.kit.push(kitId);
-        await visitorBikeDetail.save();
-    }
-
-    return res.status(200).json(new ApiResponse(200, {
-        visitorBikeDetail,
-        message: "Kit added to bike details successfully"
-    }));
-});
+};
 
 export {
     createVisitorBikeDetail,

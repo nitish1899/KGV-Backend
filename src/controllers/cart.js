@@ -4,9 +4,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Visitor } from "../models/visitor.model.js";
 import { Visitorbikedetails } from "../models/visitorbikedetails.model.js";
+import { addKitToBikeDetail } from "./visitorbikedetails.controller.js";
 
 const addKitToCart = asyncHandler(async (req, res) => {
-    const { visitorId, visitorbikedetailsId } = req.body;
+    const { visitorId, visitorbikedetailsId, kitId, vehicleno } = req.body;
+
+    await addKitToBikeDetail(kitId, vehicleno);
 
     const [visitor, visitorbikedetails, cart] = await Promise.all([
         Visitor.findById(visitorId), Visitorbikedetails.findById(visitorbikedetailsId).populate('kit'), Cart.findOne({ visitor: visitorId })
@@ -141,15 +144,10 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
         {
             $set: {
                 "item.totalPrice": totalPrice,
-                "item.addons": addons.map(addon => ({
-                    addOnItemId: addon._id,
-                    name: addon.name,
-                    price: Number(addon.price),
-                    quantity: Number(addon.quantity)
-                }))
+                "item.addons": addons.map(r => r)
             }
         },
-        { new: true } 
+        { new: true } // To return the updated document
     );
 
     if (!updatedCartItem) {
