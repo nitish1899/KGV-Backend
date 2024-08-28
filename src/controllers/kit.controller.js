@@ -65,11 +65,33 @@ const deleteKitById = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, null, "Kit deleted successfully"));
 });
+// Get addon items by kit name
+const getAddonItemsByKitName = asyncHandler(async (req, res) => {
+    const { name } = req.params;
+
+    if (!name) {
+        throw new ApiError(400, "Kit name is required");
+    }
+
+    // Find the kit by name
+    const kit = await Kit.findOne({ name: name });
+
+    if (!kit) {
+        throw new ApiError(404, "Kit not found");
+    }
+
+    // Extract only addonItems from the kit
+    const { addonItems } = kit;
+
+    return res.status(200).json(new ApiResponse(200, { addonItems }, "Addon items fetched successfully"));
+});
+
 
 export {
     createKit,
     getAllKits,
     getKitById,
     updateKitById,
-    deleteKitById
+    deleteKitById,
+    getAddonItemsByKitName
 };

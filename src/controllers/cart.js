@@ -55,6 +55,64 @@ const addKitToCart = asyncHandler(async (req, res) => {
     return res.status(200).json({ cartItemId: cartItem._id });
 });
 
+// const addExtraItemsToKit = asyncHandler(async (req, res) => {
+//     const { cartItemId, addons, visitorId } = req.body;
+
+//     if ([cartItemId, addons, visitorId].some(item => !item)) {
+//         throw new ApiError(400, 'Please fill required fields');
+//     }
+
+//     const cartItem = await CartItem.findOne({ visitor: visitorId, _id: cartItemId });
+
+//     if (!cartItem) {
+//         throw new ApiError(400, 'No items found. Please add items to your cart');
+//     }
+
+//     const addonsTotalPrice = addons && addons.length ?
+//         addons.reduce((acc, item) => {
+//             const addonItemPrice = Number(item.price) * Number(item.quantity);
+
+//             return acc + addonItemPrice;
+//         }, 0) : 0;
+
+//     const totalPrice = Number(Number(cartItem.item.kitPrice) + addonsTotalPrice);
+
+//     const updatedCartItem = await CartItem.findOneAndUpdate(
+//         { visitor: visitorId, _id: cartItemId },
+//         {
+//             $set: {
+//                 "item.totalPrice": totalPrice,
+//                 "item.addons": addons.map(r => r)
+//             }
+//         },
+//         { new: true }
+//     );
+
+//     if (!updatedCartItem) {
+//         throw new ApiError(400, 'No items found. Please add items to your cart');
+//     }
+
+//     const existingCart = await Cart.findOne({ visitor: visitorId });
+
+//     if (!existingCart) {
+//         throw new ApiError(400, 'Cart not found');
+//     }
+
+//     // Calculate the new total price for the cart
+//     const cartTotalPrice = Number(existingCart.totalPrice) + Number(addonsTotalPrice);
+
+
+//     // Update the cart's totalPrice with the new total
+//     await Cart.findOneAndUpdate(
+//         { _id: existingCart._id },
+//         { totalPrice: cartTotalPrice },
+//         { new: true }
+//     );
+
+//     return res.status(200).json({ updatedCartItem });
+// });
+
+
 const addExtraItemsToKit = asyncHandler(async (req, res) => {
     const { cartItemId, addons, visitorId } = req.body;
 
@@ -62,30 +120,43 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Please fill required fields');
     }
 
+    // Find the cart item by visitor ID and cart item ID
     const cartItem = await CartItem.findOne({ visitor: visitorId, _id: cartItemId });
 
     if (!cartItem) {
         throw new ApiError(400, 'No items found. Please add items to your cart');
     }
 
-    const addonsTotalPrice = addons && addons.length ?
-        addons.reduce((acc, item) => {
-            const addonItemPrice = Number(item.price) * Number(item.quantity);
+    const addonsTotalPrice = addons.reduce((acc, item) => {
+        const addonItemPrice = Number(item.price) * Number(item.quantity);
+        return acc + addonItemPrice;
+    }, 0);
 
-            return acc + addonItemPrice;
-        }, 0) : 0;
+    // Calculate the new total price of the cart item
+    const totalPrice = Number(cartItem.item.kitPrice) + addonsTotalPrice;
 
-    const totalPrice = Number(Number(cartItem.item.kitPrice) + addonsTotalPrice);
-
+    // Update the cart item with new addons and total price
     const updatedCartItem = await CartItem.findOneAndUpdate(
         { visitor: visitorId, _id: cartItemId },
-        { item: { ...cartItem.item, totalPrice, addons: addons.map(r => r) } }
+        {
+            $set: {
+                "item.totalPrice": totalPrice,
+                "item.addons": addons.map(addon => ({
+                    addOnItemId: addon._id,
+                    name: addon.name,
+                    price: Number(addon.price),
+                    quantity: Number(addon.quantity)
+                }))
+            }
+        },
+        { new: true } 
     );
 
     if (!updatedCartItem) {
-        throw new ApiError(400, 'No items found. Please add items to your cart');
+        throw new ApiError(400, 'Failed to update cart item');
     }
 
+    // Find the existing cart
     const existingCart = await Cart.findOne({ visitor: visitorId });
 
     if (!existingCart) {
@@ -93,18 +164,18 @@ const addExtraItemsToKit = asyncHandler(async (req, res) => {
     }
 
     // Calculate the new total price for the cart
-    const cartTotalPrice = Number(existingCart.totalPrice) + Number(addonsTotalPrice);
-
+    const cartTotalPrice = Number(existingCart.totalPrice) + addonsTotalPrice;
 
     // Update the cart's totalPrice with the new total
     await Cart.findOneAndUpdate(
         { _id: existingCart._id },
-        { totalPrice: cartTotalPrice },
+        { $set: { totalPrice: cartTotalPrice } },
         { new: true }
     );
 
     return res.status(200).json({ updatedCartItem });
 });
+
 
 
 const getCartItems = asyncHandler(async (req, res) => {
