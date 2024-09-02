@@ -180,11 +180,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
             sendEmailNotification();
 
-            // await deleteVistuserByEmail(email);
-            res.redirect(
-                `https://benevolent-queijadas-f11d8c.netlify.app/paymentsuccess?reference=${razorpay_payment_id}`);
-
-            // return res.status(200).json({ success: true, razorpay_payment_id, message: "Payment Successful" });
+            return res.status(200).json({ success: true, razorpay_payment_id, message: "Payment Successful" });
         } else {
             function sendEmailNotification() {
 
