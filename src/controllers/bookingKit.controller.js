@@ -53,8 +53,8 @@ const bookingVerification = asyncHandler(async (req, res) => {
             .update(body)
             .digest("hex");
 
-        console.log("Signature received:", razorpay_signature);
-        console.log("Signature generated:", expectedSignature);
+        // console.log("Signature received:", razorpay_signature);
+        // console.log("Signature generated:", expectedSignature);
 
         const isAuthentic = razorpay_signature === expectedSignature;
 
