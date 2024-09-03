@@ -21,8 +21,8 @@ const visitorbikedetailsSchema = new Schema(
         },
         cc: {
             type: String,
-            enum: ['100', '125', '150'], 
-            required: [true, "cc is required"], 
+            enum: ['100', '125', '150'],
+            required: [true, "cc is required"],
         },
         threeYearPetrolCost: {
             type: Number,
@@ -46,20 +46,11 @@ const visitorbikedetailsSchema = new Schema(
     }
 );
 
-// Set the petrol price, kit cost, and mileage per liter
-const petrolPricePerLiter = 95; // ₹
-const kitCostPer100Km = 21; // ₹
-const mileagePerLiter = 40; // Assuming 40 km/l
-
 // Pre-save hook to calculate costs
 visitorbikedetailsSchema.pre('save', function (next) {
-    const annualDistance = this.runningPerDay * 365; // km
-    const annualPetrolNeeded = annualDistance / mileagePerLiter; // liters
-    const annualPetrolCost = annualPetrolNeeded * petrolPricePerLiter; // ₹
-    this.threeYearPetrolCost = annualPetrolCost * 3; // ₹
+    this.threeYearPetrolCost = 4380 * this.runningPerDay; //  (3 year * 365 days * ₹4/km) * (x km)
 
-    const annualKitCost = (annualDistance / 100) * kitCostPer100Km; // ₹
-    this.threeYearKitCost = annualKitCost * 3; // ₹
+    this.threeYearKitCost = 153.3 * this.runningPerDay; // (3 year * 365 days * ₹0.14/km)*(x km)
 
     this.petrolKitCostDifference = this.threeYearPetrolCost - this.threeYearKitCost; // ₹
 
