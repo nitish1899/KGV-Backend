@@ -7,7 +7,7 @@ import { CartItem } from "../models/cartItems.model.js";
 import { Counter } from "../models/counter.model.js";
 
 const createOrder = asyncHandler(async (req, res) => {
-    const { visitorId, cartId } = req.body;
+    const { visitorId, cartId, totalAmount, amountPaid } = req.body;
 
     if ([visitorId, cartId].some((field) => !field)) {
         throw new ApiError(400, "All fields are required");
@@ -31,8 +31,8 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Please add items in your cart ");
     }
 
-    console.log('cart:', cart);
-    console.log('cartitem:', cartItems)
+    // console.log('cart:', cart);
+    // console.log('cartitem:', cartItems)
 
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + 30); // Add 30 days to current date
@@ -42,9 +42,11 @@ const createOrder = asyncHandler(async (req, res) => {
     const order = await Order.create({
         visitor,
         items: cartItems.map(cartItem => cartItem.item),
-        totalPrice: Number(cart.totalPrice),
         status: 'Pending', // Assuming 'Pending' is the first status in your statusEnum
-        delivery_date: deliveryDate
+        delivery_date: deliveryDate,
+        totalAmount,
+        amountPaid,
+        amountToBePaid: (Number(totalAmount) - Number(amountPaid))
     });
 
     await CartItem.deleteMany({ cart: cartId });
@@ -89,4 +91,31 @@ const createSerialOrder = asyncHandler(async (req, res) => {
     return res.status(200).json('serial created successfully');
 });
 
-export { createOrder, getOrderDetails, createSerialOrder };
+const getOrdersByVisitorId = asyncHandler(async (req, res) => {
+    const { visitorId } = req.params;
+
+    // Validate the visitor ID
+    if (!visitorId) {
+        throw new ApiError(400, "Visitor ID is required");
+    }
+
+    // Find all orders associated with the visitorId
+    const orders = await Order.find({ visitor: visitorId })
+        .populate({
+            path: 'items',
+            populate: {
+                path: 'product', // Assuming CartItem has a reference to a Product model
+                select: 'name price' // Adjust fields as needed
+            }
+        });
+
+    // Check if orders exist
+    if (!orders || orders.length === 0) {
+        throw new ApiError(404, "No orders found for this visitor");
+    }
+
+    // Return the orders
+    return res.status(200).json({ orders });
+});
+
+export { createOrder, getOrderDetails, createSerialOrder, getOrdersByVisitorId };

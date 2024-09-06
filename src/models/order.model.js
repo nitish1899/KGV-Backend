@@ -10,13 +10,21 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, ref: "Visitor", required: true
     },
     items: [itemSchema],
-    totalPrice: {
+    totalAmount: {
         type: Number,
         required: true
     },
     status: {
         type: String,
         enum: statusEnum,
+        required: true
+    },
+    amountPaid: {
+        type: Number,
+        required: true
+    },
+    amountToBePaid: {
+        type: Number,
         required: true
     },
     order_date: { type: Date, default: Date.now },
