@@ -121,6 +121,10 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, data, "User details updated successfully"));
 });
 
+const registerReferal = asyncHandler(async (req, res) => {
+
+ });
+
 export {
-    verifyKYC, getVisitor, updateUserDetails
+    verifyKYC, getVisitor, updateUserDetails, registerReferal
 }

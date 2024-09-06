@@ -9,6 +9,24 @@ import otpGenerator from 'otp-generator';
 import axios from "axios";
 import { aadharVerification } from '../utils/digilocker.js';
 import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.js";
+import crypto from 'crypto';
+
+// Function to generate referral code
+const generateReferralCode = (userData) => {
+  const { fullName, phoneNumber } = userData;
+
+  // Take the first 3 letters of the full name (uppercase) and the last 4 digits of the phone number
+  const namePart = fullName.substring(0, 3).toUpperCase();
+  const phonePart = phoneNumber.substring(phoneNumber.length - 4);
+
+  // Generate a random string of 4 characters
+  const randomString = crypto.randomBytes(2).toString('hex').toUpperCase();
+
+  // Combine all parts to generate a unique referral code
+  const referralCode = `${namePart}${phonePart}${randomString}`;
+
+  return referralCode;
+};
 
 
 const register = asyncHandler(async (req, res) => {
@@ -33,6 +51,8 @@ const register = asyncHandler(async (req, res) => {
   // Hash the pin
   const hashPin = await bcrypt.hash(pin.toString(), 10);
 
+  const referralCode = generateReferralCode({ fullName, phoneNumber });
+
   // Create a new user with the additional fields
   const newUser = await Visitor.create({
     fullName,
@@ -44,7 +64,8 @@ const register = asyncHandler(async (req, res) => {
     dlno,
     dob,
     gender,
-    email
+    email,
+    referralCode
   });
 
   // Prepare the response data
@@ -59,6 +80,7 @@ const register = asyncHandler(async (req, res) => {
     dob: newUser.dob,
     gender: newUser.gender,
     email: newUser.email,
+    referralCode: newUser.referralCode,
   };
 
 
@@ -86,6 +108,7 @@ const login = asyncHandler(async (req, res) => {
     userId: existingUser._id,
     fullName: existingUser.fullName,
     phoneNumber: existingUser.phoneNumber,
+    referralCode: existingUser.referralCode,
   };
 
   return res.json(new ApiResponse(201, data, "Login Successful"));

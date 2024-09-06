@@ -44,6 +44,10 @@ const visitorSchema = new Schema(
         email: {
             type: String,
             required: [true, "email is required"],
+        },
+        referralCode: {
+            type: String,
+            required: true
         }
     },
     {
