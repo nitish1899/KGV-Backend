@@ -5,6 +5,158 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Visitor } from "../models/visitor.model.js";
 import { Visitorbikedetails } from "../models/visitorbikedetails.model.js";
 import { addKitToBikeDetail } from "./visitorbikedetails.controller.js";
+import { Wishlist } from "../models/wishlist.model.js";
+import cron from 'node-cron';
+
+// cron.schedule('*/10 * * * *', async () => {
+//     const sevenDaysAgo = new Date();
+//     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+//     const groupedCartItems = await CartItem.aggregate([
+//         {
+//             $match: {
+//                 updatedAt: { $gte: sevenDaysAgo } // Filter by items updated within the last 7 days
+//             }
+//         },
+//         {
+//             $group: {
+//                 _id: "$visitor", // Group by visitor field
+//                 items: { $push: "$$ROOT" }, // Collect all cart items for each visitor
+//             },
+//         },
+//     ]);
+
+//     groupedCartItems.forEach(async (group) => {
+//         const visitorId = group._id;
+//         const items = group.items;
+
+//         // Insert items into Wishlist
+//         await Wishlist.insertMany(
+//             items.map(item => ({
+//                 visitor: item.visitor,
+//                 item: item.item,
+//             }))
+//         );
+
+//         const totalAmount = items.map(item => item.item.totalPrice);
+//         const cart = await Cart.findOne({ visitor: visitorId });
+//         await Cart.findByIdAndUpdate({ _id: cart._id }, {
+//             totalPrice: Number(Number(cart.totalPrice) - totalAmount), totalItems:
+//                 Number(Number(cart.totalItems) - items.length)
+//         })
+
+//         // Remove items from CartItem collection
+//         await CartItem.deleteMany({ _id: items.map(item => item._id), visitor: visitorId });
+
+
+//     });
+// });
+
+cron.schedule('*/45 * * * *', async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        // Fetch and group cart items by visitor
+        const groupedCartItems = await CartItem.aggregate([
+            {
+                $match: {
+                    updatedAt: { $lte: sevenDaysAgo } // Filter items updated in the last 7 days
+                }
+            },
+            {
+                $group: {
+                    _id: "$visitor", // Group by visitor field
+                    items: { $push: "$$ROOT" }, // Collect all cart items for each visitor
+                },
+            },
+        ]);
+
+        // Prepare bulk operations for Wishlist and Cart updates
+        const wishlistOperations = [];
+        const cartOperations = [];
+        const cartItemDeletions = [];
+
+        // Loop through each group (each visitor)
+        groupedCartItems.forEach((group) => {
+            const visitorId = group._id;
+            const items = group.items;
+
+            // Insert items into Wishlist
+            wishlistOperations.push(
+                ...items.map(item => ({
+                    visitor: item.visitor,
+                    item: item.item,
+                }))
+            );
+
+            // Calculate total price and update cart
+            const totalAmount = items.reduce((sum, item) => sum + item.item.totalPrice, 0);
+            cartOperations.push({
+                updateOne: {
+                    filter: { visitor: visitorId },
+                    update: {
+                        $inc: {
+                            totalPrice: -totalAmount, // Decrease total price by totalAmount
+                            totalItems: -items.length, // Decrease total items count
+                        }
+                    }
+                }
+            });
+
+            // Prepare for deletion from CartItem collection
+            cartItemDeletions.push(...items.map(item => item._id));
+        });
+
+        // Bulk insert into Wishlist
+        if (wishlistOperations.length > 0) {
+            await Wishlist.insertMany(wishlistOperations);
+        }
+
+        // Bulk update Cart for each visitor
+        if (cartOperations.length > 0) {
+            await Cart.bulkWrite(cartOperations);
+        }
+
+        // Bulk delete CartItems
+        if (cartItemDeletions.length > 0) {
+            await CartItem.deleteMany({ _id: { $in: cartItemDeletions } });
+        }
+
+        console.log("Cart items moved to wishlist and cart updated successfully.");
+    } catch (error) {
+        console.error("Error during the cron operation:", error);
+    }
+});
+
+
+const addCartItem = async (visitorId, item) => {
+    const [cart, visitor] = await Promise.all([Cart.findOne({ visitor: visitorId }), Visitor.findById(visitorId)]);
+    let existingCart = cart;
+
+    // If the cart doesn't exist, create a new one with a totalPrice of 0
+    if (!existingCart) {
+        existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
+    }
+
+    // Create a new cart item
+    const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
+
+    // Calculate the new total price for the cart
+    const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
+
+    const totalItems = Number(existingCart.totalItems) + 1;
+
+    // Update the cart's totalPrice with the new total
+    await Cart.findOneAndUpdate(
+        { _id: existingCart._id },
+        { totalPrice: cartTotalPrice, totalItems },
+        { new: true }
+    );
+
+    return cartItem._id;
+
+}
 
 const addKitToCart = asyncHandler(async (req, res) => {
     const { visitorId, visitorbikedetailsId, kitId, vehicleno } = req.body;
@@ -32,30 +184,30 @@ const addKitToCart = asyncHandler(async (req, res) => {
         totalPrice: Number(visitorbikedetails.kit[0].price),
         vehicleno: visitorbikedetails.vehicleno,
     }
+    const cartItemId = await addCartItem(visitorId, item);
+    // let existingCart = cart;
 
-    let existingCart = cart;
+    // // If the cart doesn't exist, create a new one with a totalPrice of 0
+    // if (!existingCart) {
+    //     existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
+    // }
 
-    // If the cart doesn't exist, create a new one with a totalPrice of 0
-    if (!existingCart) {
-        existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
-    }
+    // // Create a new cart item
+    // const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
 
-    // Create a new cart item
-    const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
+    // // Calculate the new total price for the cart
+    // const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
 
-    // Calculate the new total price for the cart
-    const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
+    // const totalItems = Number(existingCart.totalItems) + 1;
 
-    const totalItems = Number(existingCart.totalItems) + 1;
+    // // Update the cart's totalPrice with the new total
+    // await Cart.findOneAndUpdate(
+    //     { _id: existingCart._id },
+    //     { totalPrice: cartTotalPrice, totalItems },
+    //     { new: true }
+    // );
 
-    // Update the cart's totalPrice with the new total
-    await Cart.findOneAndUpdate(
-        { _id: existingCart._id },
-        { totalPrice: cartTotalPrice, totalItems },
-        { new: true }
-    );
-
-    return res.status(200).json({ cartItemId: cartItem._id });
+    return res.status(200).json({ cartItemId });
 });
 
 
@@ -145,26 +297,26 @@ const getCartItems = asyncHandler(async (req, res) => {
 });
 
 
-const deleteCartItem = asyncHandler(async (req, res) => {
-    const { cartId, cartItemId, visitorId } = req.body;
+// const deleteCartItemq = asyncHandler(async (req, res) => {
+//     const { cartId, cartItemId, visitorId } = req.body;
 
-    await CartItem.findOneAndDelete({ _id: cartItemId, cart: cartId, visitor: visitorId });
+//     await CartItem.findOneAndDelete({ _id: cartItemId, cart: cartId, visitor: visitorId });
 
-    const cartItems = await CartItem.find({ cart: cartId, visitor: visitorId });
+//     const cartItems = await CartItem.find({ cart: cartId, visitor: visitorId });
 
-    const totalPrice = cartItems.reduce((acc, cartitem) => {
-        let itemTotalPrice = Number(cartitem.item.totalPrice);
-        return acc + itemTotalPrice;
-    }, 0);
+//     const totalPrice = cartItems.reduce((acc, cartitem) => {
+//         let itemTotalPrice = Number(cartitem.item.totalPrice);
+//         return acc + itemTotalPrice;
+//     }, 0);
 
-    const cart = await Cart.findOneAndUpdate(
-        { _id: cartId, visitor: visitorId },
-        { totalPrice, totalItems: cartItems.length },
-        { new: true }
-    );
+//     const cart = await Cart.findOneAndUpdate(
+//         { _id: cartId, visitor: visitorId },
+//         { totalPrice, totalItems: cartItems.length },
+//         { new: true }
+//     );
 
-    return res.status(200).json({ cartId: cart._id });
-});
+//     return res.status(200).json({ cartId: cart._id });
+// });
 
 
 const getCart = asyncHandler(async (req, res) => {
@@ -183,10 +335,7 @@ const getCart = asyncHandler(async (req, res) => {
     return res.status(200).json(cart);
 })
 
-
-const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
-    const { cartItemId } = req.params;
-
+const deleteCartItem = async (cartItemId) => {
     // Find the cart item by its ID
     const cartItem = await CartItem.findById(cartItemId);
 
@@ -213,12 +362,19 @@ const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
         return acc + itemTotalPrice;
     }, 0);
 
-    // Update the cart with the new total price
+    // Update the cart with the new total price and total items count
     await Cart.findByIdAndUpdate(cartId, { totalPrice: newTotalPrice, totalItems: remainingCartItems.length }, { new: true });
+
+    return cartId; // Return the cart ID for additional actions if needed
+};
+
+const deleteCartItemByCartItemId = asyncHandler(async (req, res) => {
+    const { cartItemId } = req.params;
+
+    const cartId = await deleteCartItem(cartItemId); // Use the utility function
 
     return res.status(200).json({ message: 'Cart item deleted successfully', cartId });
 });
-
 
 const getCartSummary = asyncHandler(async (req, res) => {
     const { visitorId } = req.params;
@@ -248,5 +404,73 @@ const getCartSummary = asyncHandler(async (req, res) => {
     return res.status(200).json({ totalPrice, totalItems });
 });
 
+const moveToCart = asyncHandler(async (req, res) => {
+    const { wishlistId } = req.params;
+    const { visitorId } = req.body;
 
-export { addExtraItemsToKit, addKitToCart, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary };
+    if (!wishlistId) {
+        throw new ApiError(400, 'WishlistId not found');
+    }
+
+    if (!visitorId) {
+        throw new ApiError(400, 'VisitorId not found');
+    }
+
+    const [wishlist, visitor] = await Promise.all([
+        Wishlist.findById(wishlistId),
+        Visitor.findById(visitorId)
+    ]);
+
+    if (!wishlist) {
+        throw new ApiError(404, 'Wishlist item not found');
+    }
+
+    if (!visitor) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    const cartItemId = await addCartItem(visitorId, wishlist.item);
+    // Create a new wishlist item
+    await Wishlist.findByIdAndDelete(wishlistId);
+
+    // Use the deleteCartItem utility function
+
+
+    return res.status(200).json({ message: 'Item moved to cart successfully', cartItemId });
+});
+
+const moveToWishlist = asyncHandler(async (req, res) => {
+    const { cartItemId } = req.params;
+    const { visitorId } = req.body;
+
+    if (!cartItemId) {
+        throw new ApiError(400, 'cartItemId not found');
+    }
+
+    if (!visitorId) {
+        throw new ApiError(400, 'visitorId not found');
+    }
+
+    const [cartItem, visitor] = await Promise.all([
+        CartItem.findById(cartItemId),
+        Visitor.findById(visitorId)
+    ]);
+
+    if (!cartItem) {
+        throw new ApiError(404, 'CartItem not found');
+    }
+
+    if (!visitor) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    // Create a new wishlist item
+    const wishlistItem = await Wishlist.create({ visitor, item: cartItem.item });
+
+    // Use the deleteCartItem utility function
+    await deleteCartItem(cartItemId);
+
+    return res.status(200).json({ message: 'Item moved to wishlist successfully', wishlistItem });
+});
+
+export { addExtraItemsToKit, addKitToCart, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary, moveToCart, moveToWishlist };
