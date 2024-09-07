@@ -1,5 +1,5 @@
 import express from 'express';
-import { addKitToCart, addExtraItemsToKit, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary, moveToWishlist, moveToCart } from '../controllers/cart.js';
+import { addKitToCart, addExtraItemsToKit, getCartItems, deleteCartItem, getCart, deleteCartItemByCartItemId, getCartSummary, moveToCart } from '../controllers/cart.js';
 
 const router = express.Router();
 
@@ -10,7 +10,6 @@ router.route('/:visitorId').get(getCart);
 router.delete('/delete', deleteCartItem);
 router.delete('/cart/item/:cartItemId', deleteCartItemByCartItemId);
 router.get('/summary/:visitorId', getCartSummary);
-router.post('/moveToWishlist/:cartItemId', moveToWishlist);
 router.post('/moveToCart/:wishlistId', moveToCart);
 
 export default router;
