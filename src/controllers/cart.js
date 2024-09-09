@@ -285,19 +285,19 @@ const getCartSummary = asyncHandler(async (req, res) => {
 
 const moveToCart = asyncHandler(async (req, res) => {
     const { wishlistId } = req.params;
-    const { visitorId } = req.body;
+    const { userId } = req.body;
 
     if (!wishlistId) {
         throw new ApiError(400, 'WishlistId not found');
     }
 
-    if (!visitorId) {
+    if (!userId) {
         throw new ApiError(400, 'VisitorId not found');
     }
 
     const [wishlist, visitor] = await Promise.all([
         Wishlist.findById(wishlistId),
-        Visitor.findById(visitorId)
+        Visitor.findById(userId)
     ]);
 
     if (!wishlist) {
@@ -308,7 +308,7 @@ const moveToCart = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'User not found');
     }
 
-    const cartItemId = await addCartItem(visitorId, wishlist.item);
+    const cartItemId = await addCartItem(userId, wishlist.item);
     // Create a new wishlist item
     await Wishlist.findByIdAndDelete(wishlistId);
 

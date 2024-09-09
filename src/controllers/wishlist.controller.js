@@ -5,6 +5,7 @@ import { Visitor } from "../models/visitor.model.js";
 import { CartItem } from "../models/cartItems.model.js";
 import { Cart } from "../models/cart.model.js";
 import cron from 'node-cron';
+import { deleteCartItem } from "./cart.js";
 
 // cron.schedule('*/10 * * * *', async () => {
 //     const sevenDaysAgo = new Date();
@@ -130,7 +131,7 @@ cron.schedule('*/45 * * * *', async () => {
 const getWishlistItems = asyncHandler(async (req, res) => {
     const { visitorId } = req.params;
 
-    if (visitorId) {
+    if (!visitorId) {
         throw new ApiError('400', 'UserId not found');
     }
 
@@ -140,7 +141,7 @@ const getWishlistItems = asyncHandler(async (req, res) => {
         throw new ApiError('400', 'Wishlist Item not found');
     }
 
-    return res.status('200').json({ wishlistItems });
+    return res.status(200).json({ wishlistItems });
 });
 
 const removeWishlistItem = asyncHandler(async (req, res) => {
@@ -152,24 +153,24 @@ const removeWishlistItem = asyncHandler(async (req, res) => {
 
     await Wishlist.findOneAndDelete({ _id: wishlistItemId, visitor: visitorId });
 
-    return res.status('200').json({ message: 'Item removed successfully' });
+    return res.status(200).json({ message: 'Item removed successfully' });
 });
 
 const moveToWishlist = asyncHandler(async (req, res) => {
     const { cartItemId } = req.params;
-    const { visitorId } = req.body;
+    const { userId } = req.body;
 
     if (!cartItemId) {
         throw new ApiError(400, 'cartItemId not found');
     }
 
-    if (!visitorId) {
-        throw new ApiError(400, 'visitorId not found');
+    if (!userId) {
+        throw new ApiError(400, 'userId not found');
     }
 
     const [cartItem, visitor] = await Promise.all([
         CartItem.findById(cartItemId),
-        Visitor.findById(visitorId)
+        Visitor.findById(userId)
     ]);
 
     if (!cartItem) {
