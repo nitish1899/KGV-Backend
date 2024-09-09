@@ -182,12 +182,17 @@ const moveToWishlist = asyncHandler(async (req, res) => {
     }
 
     // Create a new wishlist item
-    const wishlistItem = await Wishlist.create({ visitor, item: cartItem.item });
+    // const wishlistItem = await Wishlist.create({ visitor, item: cartItem.item });
+
+    // Move cart item to wishlist and get all wishlist items in one step
+    const wishlistItems = await Wishlist.insertMany([
+        { visitor, item: cartItem.item }
+    ]).then(() => Wishlist.find({ visitor: userId }).populate('item'));
 
     // Use the deleteCartItem utility function
     await deleteCartItem(cartItemId);
 
-    return res.status(200).json({ message: 'Item moved to wishlist successfully', wishlistItem });
+    return res.status(200).json({ message: 'Item moved to wishlist successfully', wishlistItems });
 });
 
 export { getWishlistItems, removeWishlistItem, moveToWishlist };

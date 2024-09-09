@@ -308,14 +308,13 @@ const moveToCart = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'User not found');
     }
 
-    const cartItemId = await addCartItem(userId, wishlist.item);
-    // Create a new wishlist item
+    await addCartItem(userId, wishlist.item);
+
+    const cartItems = await CartItem.find({ visitor: userId }).populate('item');
+
     await Wishlist.findByIdAndDelete(wishlistId);
 
-    // Use the deleteCartItem utility function
-
-
-    return res.status(200).json({ message: 'Item moved to cart successfully', cartItemId });
+    return res.status(200).json({ message: 'Item moved to cart successfully', cartItems });
 });
 
 
