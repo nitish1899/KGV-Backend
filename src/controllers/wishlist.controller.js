@@ -124,7 +124,7 @@ cron.schedule('*/45 * * * *', async () => {
 
         console.log("Cart items moved to wishlist and cart updated successfully.");
     } catch (error) {
-        console.error("Error during the cron operation:", error);
+        console.log("Error during the cron operation:", error);
     }
 });
 

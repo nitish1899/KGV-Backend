@@ -137,7 +137,7 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
     return res.status(201).json(
       new ApiResponse(201, { otp }, "OTP sent successfully!"));
   } catch (error) {
-    console.error('Error sending OTP:', error);
+    console.log('Error sending OTP:', error);
     res.status(400).json(
       // { success: false, message: 'Failed to send OTP.' }
       new ApiResponse(400, { error }, "Failed to send OTP")
@@ -172,7 +172,7 @@ const sendExistingVisitorOtp = asyncHandler(async (req, res) => {
       new ApiResponse(201, { otp }, "OTP sent successfully!")
     );
   } catch (error) {
-    console.error('Error sending OTP:', error);
+    console.log('Error sending OTP:', error);
     res.status(400).json(
       new ApiResponse(400, { error }, "Failed to send OTP")
     );

@@ -13,7 +13,7 @@
 // return res.status(201).json('OTP sent successfully!');
 // }
 // catch(error){
-//   console.error('Error sending OTP:', error);
+//   console.log('Error sending OTP:', error);
 //   res.status(400).json({ success: false, message: 'Failed to send OTP.' });
 // }
 

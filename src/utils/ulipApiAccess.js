@@ -26,7 +26,7 @@ async function fetchNewULIPToken() {
 //     try {
 //         ulipToken = await fetchNewULIPToken();
 //     } catch (error) {
-//         console.error('Error updating ULIP token:', error);
+//         console.log('Error updating ULIP token:', error);
 //     }
 // });
 

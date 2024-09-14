@@ -18,6 +18,8 @@ app.use(cookieParser())
 
 //routes import
 
+
+import fileRoutes from './routes/userroutes.js';
 import visitorRouter from './routes/visitor.routes.js';
 import visitorbikedetailsRouter from './routes/visitorbikedetails.routes.js';
 import uploadRouter from './routes/upload.routes.js';
@@ -26,6 +28,7 @@ import cartRouter from './routes/cart.route.js';
 import orderRouter from './routes/order.route.js';
 import kitRoutes from './routes/kit.routes.js';
 import bookingKitRouter from './routes/bookingKit.routes.js';
+import primimumRouter from './routes/primimum.routes.js';
 import { getbikes } from "./utils/bike.js"
 import wishlistRouter from "./routes/wishlist.route.js"
 
@@ -37,9 +40,12 @@ app.use("/api/v1/visitorbikedetails", visitorbikedetailsRouter)
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/v1/bookingkit", bookingKitRouter);
+app.use("/api/v1/primimum", primimumRouter);
 app.use("/api/wishlist", wishlistRouter);
 
 app.use('/api/kits', kitRoutes);
+
+app.use("/api/files", fileRoutes);
 
 
 app.use("/api", uploadRouter)
@@ -52,7 +58,7 @@ app.get("/api/getkey", (req, res) =>
 );
 
 app.use((err, req, res, next) => {
-    console.error(err.stack); // Log the error (optional)
+    console.log(err.stack); // Log the error (optional)
 
     // Set the status code (default to 500 if not set)
     res.status(err.statusCode || 500);

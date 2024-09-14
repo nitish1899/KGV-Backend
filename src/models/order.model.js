@@ -50,6 +50,8 @@ const Order = mongoose.model('Order', orderSchema);
 
 export { Order, statusEnum };
 
+
+
 // Initialize the Counter document with starting sequence 999 (if not already done)
 // This should be done only once, during setup
 // await Counter.create({ _id: 'orderId', seq: 999 });

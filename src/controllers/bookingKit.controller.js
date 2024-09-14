@@ -26,13 +26,13 @@ const checkout = asyncHandler(async (req, res) => {
 
         const order = await instance.orders.create(options);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             order,
         });
     } catch (error) {
-        console.error("Error during checkout:", error);
-        res.status(error.statusCode || 500).json({
+        console.log("Error during checkout:", error);
+        return res.status(error.statusCode || 500).json({
             success: false,
             message: error.message || "Internal server error",
         });
@@ -64,15 +64,15 @@ const bookingVerification = asyncHandler(async (req, res) => {
             port: 465,
             // service: " GoDaddy",
             auth: {
-                user: process.env.GODADDY_EMAIL, // Update with your Gmail address
-                pass: process.env.GODADDY_PASSWORD, // Update with your Gmail password
+                user: process.env.SENDER_EMAIL, // Update with your Gmail address
+                pass: process.env.SENDER_PASSWORD, // Update with your Gmail password
             },
         });
 
         if (isAuthentic) {
             const paymentDetails = await instance.payments.fetch(razorpay_payment_id);
 
-            console.log("paymentDetails:", paymentDetails);
+            // console.log("paymentDetails:", paymentDetails);
 
             // Save payment details to BookingKit collection
             const bookingKit = new Payment({
@@ -95,7 +95,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
             function sendEmailNotification() {
                 const mailOptions = {
-                    from: "team@kgvl.co.in",
+                    from: process.env.SENDER_EMAIL,
                     to: `${paymentDetails.notes.email}`,
                     subject: "Your Booking Confirmation - Payment Successful",
                     html: `
@@ -207,7 +207,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid signature" });
         }
     } catch (error) {
-        console.error("Error during payment verification:", error);
+        console.log("Error during payment verification:", error);
         res.status(error.statusCode || 500).json({
             success: false,
             message: error.message || "Internal server error",

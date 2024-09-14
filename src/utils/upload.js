@@ -33,7 +33,7 @@ export const uploadToS3 = async (req, res) => {
         res.send(`Files uploaded successfully to: ${uploadedFiles.join(', ')}`);
 
     } catch (error) {
-        console.error('Error uploading files to S3:', error.message);
+        console.log('Error uploading files to S3:', error.message);
         res.status(500).send('Error uploading files');
     }
 }
