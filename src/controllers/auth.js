@@ -36,11 +36,32 @@ const register = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  // Check if a user with the provided phone number already exists
-  const existingUser = await Visitor.findOne({ phoneNumber });
+  const existingUser = await Visitor.findOne({
+    $or: [
+      { phoneNumber },
+      { aadhar },
+      { pan },
+      { dlno },
+      { email }
+    ]
+  });
 
   if (existingUser) {
-    return res.status(400).json({ status: "failed", msg: "User already exists" });
+    let message = "User already exists";
+
+    if (existingUser.phoneNumber === phoneNumber) {
+      message = "Phone number already exists";
+    } else if (existingUser.aadhar === aadhar) {
+      message = "Aadhar number already exists";
+    } else if (existingUser.pan === pan) {
+      message = "PAN number already exists";
+    } else if (existingUser.dlno === dlno) {
+      message = "Driving license number already exists";
+    } else if (existingUser.email === email) {
+      message = "Email already exists";
+    }
+
+    return res.status(400).json({ status: "failed", msg: message });
   }
 
   // Validate pin and confirmPin
