@@ -13,10 +13,7 @@ app.use(cors({
 app.use(express.json({ limit: "16kb" }))
 app.use(express.urlencoded({ extended: true, limit: "16kb" }))
 app.use(express.static("public"))
-app.use(cookieParser())
-
-
-//routes import
+app.use(cookieParser());
 
 
 import fileRoutes from './routes/userroutes.js';
@@ -48,7 +45,12 @@ app.use('/api/kits', kitRoutes);
 app.use("/api/files", fileRoutes);
 
 
-app.use("/api", uploadRouter)
+app.use("/api", uploadRouter);
+
+app.get("/api/redirect", (req, res) => {
+    res.redirect('https://play.google.com/store/apps/details?id=com.tsilteam.KGVHybridSol&contest=kgvlcontest');
+});
+
 app.get("/api/bikes", (req, res) => {
     return res.status(200).json({ bikes: getbikes() });
 });
