@@ -27,6 +27,10 @@ const generateReferralCode = (userData) => {
 };
 
 const register = asyncHandler(async (req, res) => {
+  Object.keys(req.body).forEach(key => {
+    req.body[key] = req.body[key].trim();
+  });
+
   const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email } = req.body;
 
   if ([fullName, phoneNumber, pin, confirmPin, aadhar, pan, dlno, dob, gender, email].some(field => !field)) {
@@ -82,7 +86,7 @@ const register = asyncHandler(async (req, res) => {
       throw new ApiError('Aadhar verification failed');
     }
 
-    if (aadharResponse && aadharResponse.code && aadharResponse.code_verifier) {
+    if (aadharResponse && aadharResponse.data.response.code && aadharResponse.data.response.code_verifier) {
 
       const options2 = {
         method: 'POST',
@@ -90,7 +94,7 @@ const register = asyncHandler(async (req, res) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        data: { panno: pan, PANFullName: fullName, code: aadharResponse.code, code_verifier: aadharResponse.code_verifier }
+        data: { panno: pan, PANFullName: fullName, code: aadharResponse.data.response.code, code_verifier: aadharResponse.data.response.code_verifier }
       }
 
       const panVerificationResponse = await axios.request(options2);
