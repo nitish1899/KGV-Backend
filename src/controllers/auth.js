@@ -7,8 +7,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import otpGenerator from 'otp-generator';
 import axios from "axios";
-import { aadharVerification } from '../utils/digilocker.js';
-import { drivingLicenceVerification } from "../utils/drivingLicenceVerification.js";
 import crypto from 'crypto';
 
 // Function to generate referral code
@@ -27,7 +25,6 @@ const generateReferralCode = (userData) => {
 
   return referralCode;
 };
-
 
 const register = asyncHandler(async (req, res) => {
   const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email } = req.body;
@@ -64,9 +61,62 @@ const register = asyncHandler(async (req, res) => {
     return res.status(400).json({ status: "failed", msg: message });
   }
 
-  // Validate pin and confirmPin
   if (pin !== confirmPin) {
     return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
+  }
+
+  try {
+
+    const options1 = {
+      method: 'POST',
+      url: 'https://pureprakruti.com/api/kyc/verify/aadhar',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: { uid: aadhar, name: fullName, dob, gender, mobile: phoneNumber }
+    }
+
+    const aadharResponse = await axios.request(options1);
+
+    if (!aadharResponse) {
+      throw new ApiError('Aadhar verification failed');
+    }
+
+    if (aadharResponse && aadharResponse.code && aadharResponse.code_verifier) {
+
+      const options2 = {
+        method: 'POST',
+        url: 'https://pureprakruti.com/api/kyc/verify/pan',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: { panno: pan, PANFullName: fullName, code: aadharResponse.code, code_verifier: aadharResponse.code_verifier }
+      }
+
+      const panVerificationResponse = await axios.request(options2);
+
+      if (!panVerificationResponse) {
+        throw new ApiError('PAN verification failed');
+      }
+    }
+
+    const options3 = {
+      method: 'POST',
+      url: 'https://pureprakruti.com/api/kyc/verify/drivingLicence',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: { dlnumber, dob }
+    }
+
+    const dlResponse = await axios.request(options3);
+
+    if (!dlResponse) {
+      throw new ApiError('Driving Licence verification failed');
+    }
+
+  } catch (error) {
+    throw new ApiError(400, error.message);
   }
 
   // Hash the pin
@@ -104,23 +154,19 @@ const register = asyncHandler(async (req, res) => {
     referralCode: newUser.referralCode,
   };
 
-
   return res.json(new ApiResponse(201, data, "User registered Successfully"));
 });
-
 
 const login = asyncHandler(async (req, res) => {
   const { phoneNumber, pin } = req.body;
   const existingUser = await Visitor.findOne({ phoneNumber });
-  // console.log('existingUser', existingUser)
+
   if (!existingUser) {
     // user is not registered yet need to register yourself.
     throw new Error("User does not exist");
   }
 
-  // console.log(' existingUser.pin', existingUser.pin)
   const isPinCorrect = await bcrypt.compare(pin.toString(), existingUser.pin);
-  // console.log('isPinCorrect', isPinCorrect)
 
   if (!isPinCorrect)
     throw new Error("Incorrect pin found");

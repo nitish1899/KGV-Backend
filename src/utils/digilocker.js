@@ -13,7 +13,7 @@ async function aadharVerification(uid, name, dob, gender, mobile) {
         ) {
             throw new ApiError(400, "All fields are required");
         }
-
+        console.log(ulipToken)
         const options = {
             method: 'POST',
             url: 'https://www.ulipstaging.dpiit.gov.in/ulip/v1.0.0/DIGILOCKER/01',
@@ -77,79 +77,79 @@ async function aadharVerification(uid, name, dob, gender, mobile) {
 //     }
 // };
 
-// async function digilockerToken(code, code_verifier) {
+async function digilockerToken(code, code_verifier) {
 
-//     // console.log('code && code_verifier', code, code_verifier)
+    // console.log('code && code_verifier', code, code_verifier)
 
-//     try {
+    try {
 
-//         if (
-//             [code, code_verifier].some((field) => field?.trim() === "")
-//         ) {
-//             throw new ApiError(400, "All fields are required")
-//         }
+        if (
+            [code, code_verifier].some((field) => field?.trim() === "")
+        ) {
+            throw new ApiError(400, "All fields are required")
+        }
 
-//         const options = {
-//             method: 'POST',
-//             url: 'https://www.ulipstaging.dpiit.gov.in/ulip/v1.0.0/DIGILOCKER/03',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${ulipToken}`,
-//             },
-//             data: { code, code_verifier }
-//         }
+        const options = {
+            method: 'POST',
+            url: 'https://www.ulipstaging.dpiit.gov.in/ulip/v1.0.0/DIGILOCKER/03',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ulipToken}`,
+            },
+            data: { code, code_verifier }
+        }
 
-//         const apiResponse = await axios.request(options);
-//         const token = apiResponse?.data?.response?.[0]?.response.access_token;
+        const apiResponse = await axios.request(options);
+        const token = apiResponse?.data?.response?.[0]?.response.access_token;
 
-//         return token;
-//     }
-//     catch (error) {
-//         // console.log('Error', error);
-//         throw new ApiError(error.message);
-//     }
-// };
+        return token;
+    }
+    catch (error) {
+        // console.log('Error', error);
+        throw new ApiError(error.message);
+    }
+};
 
 // async function panVerification(req, res) {
-// async function panVerification(panno, PANFullName, code, code_verifier) {
-//     try {
-//         // const { panno, PANFullName, code, code_verifier } = req.body;
+async function panVerification(panno, PANFullName, code, code_verifier) {
+    try {
+        // const { panno, PANFullName, code, code_verifier } = req.body;
 
-//         if (
-//             [panno, PANFullName, code, code_verifier].some((field) => field?.trim() === "")
-//         ) {
-//             throw new ApiError(400, "All fields are required")
-//         }
+        if (
+            [panno, PANFullName, code, code_verifier].some((field) => field?.trim() === "")
+        ) {
+            throw new ApiError(400, "All fields are required")
+        }
 
-//         const token = await digilockerToken(code, code_verifier);
+        const token = await digilockerToken(code, code_verifier);
 
-//         // console.log('token', token);
+        // console.log('token', token);
 
-//         const options = {
-//             method: 'POST',
-//             url: 'https://www.ulipstaging.dpiit.gov.in/ulip/v1.0.0/DIGILOCKER/04',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${ulipToken}`,
-//             },
-//             data: { panno, PANFullName, token, consent: "Y" }
-//         }
+        const options = {
+            method: 'POST',
+            url: 'https://www.ulipstaging.dpiit.gov.in/ulip/v1.0.0/DIGILOCKER/04',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ulipToken}`,
+            },
+            data: { panno, PANFullName, token, consent: "Y" }
+        }
 
-//         const apiResponse = await axios.request(options);
-//         const response = apiResponse?.data?.response?.[0]?.response;
+        const apiResponse = await axios.request(options);
+        const response = apiResponse?.data?.response?.[0]?.response;
 
-//         if (apiResponse.data.error === 'true') {
-//             throw new ApiError(400, ('Pan Verification Failed'));
-//         }
+        if (apiResponse.data.error === 'true') {
+            throw new ApiError(400, ('Pan Verification Failed'));
+        }
 
-//         return res.status(200).json(response);
-//     }
-//     catch (error) {
-//         // console.log('Error', error);
+        return res.status(200).json(response);
+    }
+    catch (error) {
+        // console.log('Error', error);
 
-//         throw new ApiError(400, (error.message));
-//         // res.status(400).json(error.message);
-//     }
-// };
+        throw new ApiError(400, (error.message));
+        // res.status(400).json(error.message);
+    }
+};
 
-export { aadharVerification };
+export { aadharVerification, panVerification };
