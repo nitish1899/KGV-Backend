@@ -47,6 +47,10 @@ const visitorSchema = new Schema(
         },
         referralCode: {
             type: String,
+            required: false
+        },
+        myReferralCode: {
+            type: String,
             required: true
         }
     },

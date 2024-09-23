@@ -31,7 +31,7 @@ const register = asyncHandler(async (req, res) => {
     req.body[key] = req.body[key].trim();
   });
 
-  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email } = req.body;
+  const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email, referralCode } = req.body;
 
   if ([fullName, phoneNumber, pin, confirmPin, aadhar, pan, dlno, dob, gender, email].some(field => !field)) {
     throw new ApiError(400, "All fields are required");
@@ -126,7 +126,7 @@ const register = asyncHandler(async (req, res) => {
   // Hash the pin
   const hashPin = await bcrypt.hash(pin.toString(), 10);
 
-  const referralCode = generateReferralCode({ fullName, phoneNumber });
+  const myReferralCode = generateReferralCode({ fullName, phoneNumber });
 
   // Create a new user with the additional fields
   const newUser = await Visitor.create({
@@ -140,7 +140,8 @@ const register = asyncHandler(async (req, res) => {
     dob,
     gender,
     email,
-    referralCode
+    referralCode,
+    myReferralCode
   });
 
   // Prepare the response data
