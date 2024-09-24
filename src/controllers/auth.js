@@ -205,7 +205,7 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
       }
     });
 
-    // console.log('sent otp')
+    console.log('sent otp',otp);
     return res.status(201).json(
       new ApiResponse(201, { otp }, "OTP sent successfully!"));
   } catch (error) {
