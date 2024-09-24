@@ -104,20 +104,20 @@ const register = asyncHandler(async (req, res) => {
       }
     }
 
-    const options3 = {
-      method: 'POST',
-      url: 'https://pureprakruti.com/api/kyc/verify/drivingLicence',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: { dlnumber, dob }
-    }
+    // const options3 = {
+    //   method: 'POST',
+    //   url: 'https://pureprakruti.com/api/kyc/verify/drivingLicence',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   data: { dlnumber, dob }
+    // }
 
-    const dlResponse = await axios.request(options3);
+    // const dlResponse = await axios.request(options3);
 
-    if (!dlResponse) {
-      throw new ApiError('Driving Licence verification failed');
-    }
+    // if (!dlResponse) {
+    //   throw new ApiError('Driving Licence verification failed');
+    // }
 
   } catch (error) {
     throw new ApiError(400, error.message);
