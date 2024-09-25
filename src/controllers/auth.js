@@ -27,8 +27,13 @@ const generateReferralCode = (userData) => {
 };
 
 const register = asyncHandler(async (req, res) => {
+
   Object.keys(req.body).forEach(key => {
-    req.body[key] = req.body[key].trim();
+
+    if (req.body[key]) {
+      req.body[key] = req.body[key].trim();
+    }
+
   });
 
   const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email, referralCode } = req.body;
@@ -205,7 +210,7 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
       }
     });
 
-    console.log('sent otp',otp);
+    console.log('sent otp', otp);
     return res.status(201).json(
       new ApiResponse(201, { otp }, "OTP sent successfully!"));
   } catch (error) {
