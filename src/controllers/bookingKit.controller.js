@@ -101,31 +101,15 @@ const bookingVerification = asyncHandler(async (req, res) => {
             if (referral && !referral?.isUsed) {
                 try {
                     // Step 1: Find or create the wallet
-                    const referrerUserWallet = await Wallet.findOneAndUpdate(
-                        { userId: referral.referrer._id },
-                        {
-                            $setOnInsert: {
-                                balance: 0,
-                                transactions: []
-                            }
-                        },
-                        {
-                            upsert: true, // Creates the document if it doesn't exist
-                            new: true, // Returns the updated or newly created document
-                            setDefaultsOnInsert: true // Applies defaults on insert
-                        }
-                    );
-
                     // Step 2: Update balance and add a transaction
-                    await Wallet.findByIdAndUpdate(
-                        referrerUserWallet._id,
+                    await Wallet.findOneAndUpdate(
+                        { userId: referral.referrer._id },
                         {
                             $inc: { balance: 3000 }, // Increment balance by 3000
                             $push: { transactions: { amount: 3000, date: new Date(), type: 'credit' } } // Add a new transaction
                         },
                         { new: true } // Return the updated document
                     );
-
                 } catch (error) {
                     throw new Error(error.message);
                 }
