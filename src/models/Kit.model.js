@@ -10,7 +10,7 @@ const kitSchema = new Schema({
             price: { type: String, required: true }
         }]
     }
-});
+}, { timestamps: true });
 
 const Kit = mongoose.model('Kit', kitSchema);
 

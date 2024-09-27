@@ -25,9 +25,11 @@ import cartRouter from './routes/cart.route.js';
 import orderRouter from './routes/order.route.js';
 import kitRoutes from './routes/kit.routes.js';
 import bookingKitRouter from './routes/bookingKit.routes.js';
+import kgvRouter from './routes/kgvmitr.route.js';
 import primimumRouter from './routes/primimum.routes.js';
 import { getbikes } from "./utils/bike.js"
 import wishlistRouter from "./routes/wishlist.route.js"
+import walletRoutes from './routes/walletRoutes.js';
 
 
 //routes declaration
@@ -37,8 +39,11 @@ app.use("/api/v1/visitorbikedetails", visitorbikedetailsRouter)
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/v1/bookingkit", bookingKitRouter);
+app.use("/api/v1/kgvmitra", kgvRouter);
 app.use("/api/v1/primimum", primimumRouter);
 app.use("/api/wishlist", wishlistRouter);
+
+app.use('/api/wallet', walletRoutes);
 
 app.use('/api/kits', kitRoutes);
 

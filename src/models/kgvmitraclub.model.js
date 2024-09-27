@@ -1,11 +1,19 @@
 import mongoose from "mongoose";
 
-const newpaymentSchema = new mongoose.Schema({
-    name: {
+const kgvmitraSchema = new mongoose.Schema({
+    fullName: {
         type: String,
         required: true,
     },
-    phone: {
+    phoneNumber: {
+        type: String,
+        required: true,
+    },
+    address: {
+        type: String,
+        required: true,
+    },
+    aadhar: {
         type: String,
         required: true,
     },
@@ -13,15 +21,15 @@ const newpaymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    adhaarno: {
+    dob: {
+        type: String,
+        required: true,
+    },
+    gender: {
         type: String,
         required: true,
     },
     email: {
-        type: String,
-        required: true,
-    },
-    dailyrunning: {
         type: String,
         required: true,
     },
@@ -41,8 +49,8 @@ const newpaymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-}, { timestamps: true });
+},{timestamps:true});
 
-const NewPayment = mongoose.model("NewPayment", newpaymentSchema);
+const KgvPayment = mongoose.model("kgvpayment", kgvmitraSchema);
 
-export { NewPayment };
+export { KgvPayment };

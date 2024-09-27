@@ -1,6 +1,5 @@
 
 import bcrypt from "bcrypt";
-// const jwt = require('jsonwebtoken');
 import { Visitor } from "../models/visitor.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -8,12 +7,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import otpGenerator from 'otp-generator';
 import axios from "axios";
 import crypto from 'crypto';
+import { Referral } from "../models/referral.model.js";
 
-// Function to generate referral code
+
 const generateReferralCode = (userData) => {
   const { fullName, phoneNumber } = userData;
 
-  // Take the first 3 letters of the full name (uppercase) and the last 4 digits of the phone number
   const namePart = fullName.substring(0, 3).toUpperCase();
   const phonePart = phoneNumber.substring(phoneNumber.length - 4);
 
@@ -22,18 +21,15 @@ const generateReferralCode = (userData) => {
 
   // Combine all parts to generate a unique referral code
   const referralCode = `${namePart}${phonePart}${randomString}`;
-
   return referralCode;
 };
 
 const register = asyncHandler(async (req, res) => {
 
   Object.keys(req.body).forEach(key => {
-
     if (req.body[key]) {
       req.body[key] = req.body[key].trim();
     }
-
   });
 
   const { fullName, phoneNumber, pin, confirmPin, aadhar, pan, address, dlno, dob, gender, email, referralCode } = req.body;
@@ -73,6 +69,8 @@ const register = asyncHandler(async (req, res) => {
   if (pin !== confirmPin) {
     return res.status(400).json({ status: "failed", msg: "Pin and confirm pin mismatch" });
   }
+
+  let referrer = '';
 
   try {
 
@@ -124,6 +122,15 @@ const register = asyncHandler(async (req, res) => {
     //   throw new ApiError('Driving Licence verification failed');
     // }
 
+    if (referralCode) {
+      referrer = await Visitor.findOne({ myReferralCode: referralCode });
+
+      if (!referrer) {
+        throw new ApiError(400, 'Referral code does not exists');
+      }
+    }
+
+
   } catch (error) {
     throw new ApiError(400, error.message);
   }
@@ -148,6 +155,8 @@ const register = asyncHandler(async (req, res) => {
     referralCode,
     myReferralCode
   });
+
+  await Referral.create({ referralCode, referrer, referredUser: newUser });
 
   // Prepare the response data
   const data = {

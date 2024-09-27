@@ -6,6 +6,7 @@ const visitorSchema = new Schema(
             type: String,
             required: [true, "Name is required"],
         },
+        
         phoneNumber: {
             type: String,
             required: [true, "Phone Number is required"],

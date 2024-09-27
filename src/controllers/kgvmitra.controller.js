@@ -3,10 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
-import { Payment } from "../models/payment.model.js";
+import { KgvPayment } from "../models/kgvmitraclub.model.js";
 import crypto from "crypto";
-import { Referral } from "../models/referral.model.js";
-import Wallet from "../models/Wallet.js";
 
 const instance = new Razorpay({
     key_id: process.env.RAZORPAY_API_KEY,
@@ -41,9 +39,9 @@ const checkout = asyncHandler(async (req, res) => {
     }
 });
 
-const bookingVerification = asyncHandler(async (req, res) => {
+const kgvpaymentVerification = asyncHandler(async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, referralCode, userId } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             throw new ApiError(400, "Missing required fields");
@@ -77,7 +75,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
             // console.log("paymentDetails:", paymentDetails);
 
             // Save payment details to BookingKit collection
-            const bookingKit = new Payment({
+            const bookingKit = new KgvPayment({
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
@@ -94,42 +92,6 @@ const bookingVerification = asyncHandler(async (req, res) => {
             });
 
             await bookingKit.save();
-
-            const referral = await Referral.findOne({ referralCode, referredUser: userId }).populate('referrer');
-
-
-            if (referral && !referral?.isUsed) {
-                try {
-                    // Step 1: Find or create the wallet
-                    const referrerUserWallet = await Wallet.findOneAndUpdate(
-                        { userId: referral.referrer._id },
-                        {
-                            $setOnInsert: {
-                                balance: 0,
-                                transactions: []
-                            }
-                        },
-                        {
-                            upsert: true, // Creates the document if it doesn't exist
-                            new: true, // Returns the updated or newly created document
-                            setDefaultsOnInsert: true // Applies defaults on insert
-                        }
-                    );
-
-                    // Step 2: Update balance and add a transaction
-                    await Wallet.findByIdAndUpdate(
-                        referrerUserWallet._id,
-                        {
-                            $inc: { balance: 3000 }, // Increment balance by 3000
-                            $push: { transactions: { amount: 3000, date: new Date(), type: 'credit' } } // Add a new transaction
-                        },
-                        { new: true } // Return the updated document
-                    );
-
-                } catch (error) {
-                    throw new Error(error.message);
-                }
-            }
 
             function sendEmailNotification() {
                 const mailOptions = {
@@ -255,5 +217,5 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
 export {
     checkout,
-    bookingVerification
+    kgvpaymentVerification
 };

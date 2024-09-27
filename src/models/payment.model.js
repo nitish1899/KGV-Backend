@@ -49,7 +49,7 @@ const paymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-});
+}, { timestamps: true });
 
 const Payment = mongoose.model("payment", paymentSchema);
 
