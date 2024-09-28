@@ -122,58 +122,57 @@ const register = asyncHandler(async (req, res) => {
     //   throw new ApiError('Driving Licence verification failed');
     // }
 
+    // Hash the pin
+    const hashPin = await bcrypt.hash(pin.toString(), 10);
+
+    const myReferralCode = generateReferralCode({ fullName, phoneNumber });
+
+    // Create a new user with the additional fields
+    const newUser = await Visitor.create({
+      fullName,
+      phoneNumber,
+      pin: hashPin,
+      aadhar,
+      pan,
+      address,
+      dlno,
+      dob,
+      gender,
+      email,
+      referralCode,
+      myReferralCode
+    });
+
     if (referralCode) {
       referrer = await Visitor.findOne({ myReferralCode: referralCode });
 
       if (!referrer) {
         throw new ApiError(400, 'Referral code does not exists');
       }
+
+      await Referral.create({ referralCode, referrer, referredUser: newUser });
+
     }
 
+    // Prepare the response data
+    const data = {
+      userId: newUser._id,
+      fullName: newUser.fullName,
+      phoneNumber: newUser.phoneNumber,
+      aadhar: newUser.aadhar,
+      pan: newUser.pan,
+      address: newUser.address,
+      dlno: newUser.dlno,
+      dob: newUser.dob,
+      gender: newUser.gender,
+      email: newUser.email,
+      referralCode: newUser.referralCode,
+    };
 
+    return res.json(new ApiResponse(201, data, "User registered Successfully"));
   } catch (error) {
     throw new ApiError(400, error.message);
   }
-
-  // Hash the pin
-  const hashPin = await bcrypt.hash(pin.toString(), 10);
-
-  const myReferralCode = generateReferralCode({ fullName, phoneNumber });
-
-  // Create a new user with the additional fields
-  const newUser = await Visitor.create({
-    fullName,
-    phoneNumber,
-    pin: hashPin,
-    aadhar,
-    pan,
-    address,
-    dlno,
-    dob,
-    gender,
-    email,
-    referralCode,
-    myReferralCode
-  });
-
-  await Referral.create({ referralCode, referrer, referredUser: newUser });
-
-  // Prepare the response data
-  const data = {
-    userId: newUser._id,
-    fullName: newUser.fullName,
-    phoneNumber: newUser.phoneNumber,
-    aadhar: newUser.aadhar,
-    pan: newUser.pan,
-    address: newUser.address,
-    dlno: newUser.dlno,
-    dob: newUser.dob,
-    gender: newUser.gender,
-    email: newUser.email,
-    referralCode: newUser.referralCode,
-  };
-
-  return res.json(new ApiResponse(201, data, "User registered Successfully"));
 });
 
 const login = asyncHandler(async (req, res) => {

@@ -6,7 +6,7 @@ const visitorSchema = new Schema(
             type: String,
             required: [true, "Name is required"],
         },
-        
+
         phoneNumber: {
             type: String,
             required: [true, "Phone Number is required"],
@@ -53,7 +53,11 @@ const visitorSchema = new Schema(
         myReferralCode: {
             type: String,
             required: true
-        }
+        },
+        isPremiumUser: {
+            type: Boolean,
+            default: false
+        },
     },
     {
         timestamps: true

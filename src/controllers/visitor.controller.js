@@ -123,8 +123,21 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 
 const registerReferal = asyncHandler(async (req, res) => {
 
- });
+});
+
+const updatePremiumStatus = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        throw new ApiError(400, 'User Id not found');
+    }
+
+    const user = await Visitor.findByIdAndUpdate(userId, { isPremiumUser: true });
+
+    return res.status(200).json({ success: true, message: 'Premium status updated successfully' });
+}
+);
 
 export {
-    verifyKYC, getVisitor, updateUserDetails, registerReferal
+    verifyKYC, getVisitor, updateUserDetails, registerReferal, updatePremiumStatus
 }
