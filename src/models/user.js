@@ -26,9 +26,17 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     imageUrls: {
-        type: [String], 
+        type: [String],
         required: true,
     },
+    reward: {
+        type: String,
+        required: false,
+    },
+    isParticipated: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
@@ -48,7 +56,7 @@ export default User;
 //         required: true,
 //     },
 //     imageUrls: {
-//         type: [String], 
+//         type: [String],
 //         required: true,
 //     },
 // }, { timestamps: true });

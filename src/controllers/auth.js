@@ -193,7 +193,8 @@ const login = asyncHandler(async (req, res) => {
     userId: existingUser._id,
     fullName: existingUser.fullName,
     phoneNumber: existingUser.phoneNumber,
-    referralCode: existingUser.referralCode,
+    myReferralCode: existingUser.myReferralCode,
+    isPremiumUser: existingUser.isPremiumUser
   };
 
   return res.json(new ApiResponse(201, data, "Login Successful"));
@@ -206,7 +207,7 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
     const existedUser = await Visitor.findOne({ phoneNumber })
 
     if (existedUser) {
-      throw new ApiError(409, " phoneNumber already exists")
+      throw new ApiError(400, "Phone number already exists")
     }
     // sent otp on mobile number
     await axios.get('https://www.fast2sms.com/dev/bulkV2', {
@@ -222,10 +223,10 @@ const sendVisitorOtp = asyncHandler(async (req, res) => {
     return res.status(201).json(
       new ApiResponse(201, { otp }, "OTP sent successfully!"));
   } catch (error) {
-    console.log('Error sending OTP:', error);
-    res.status(400).json(
+    console.log('Error sending OTP:', error.message);
+    return res.status(400).json(
       // { success: false, message: 'Failed to send OTP.' }
-      new ApiResponse(400, { error }, "Failed to send OTP")
+      new ApiResponse(400, { error }, error.message)
     );
   }
 })

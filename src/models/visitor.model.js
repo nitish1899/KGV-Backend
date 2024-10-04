@@ -58,6 +58,14 @@ const visitorSchema = new Schema(
             type: Boolean,
             default: false
         },
+        spinTheWheel: {
+            type: Boolean,
+            default: false
+        },
+        reward: {
+            type: String,
+            required: false,
+        },
     },
     {
         timestamps: true

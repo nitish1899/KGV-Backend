@@ -1,16 +1,24 @@
 import { uploadToS3 } from '../models/s3Service.js';
 import User from '../models/user.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { ApiError } from "../utils/ApiError.js";
 
 // Upload multiple images and store user data
 const uploadMultipleImages = async (req, res) => {
-    const { name, phone, dlno, adhaarno, email, dailyrunning } = req.body;
+    try {
+        const { name, phone, dlno, adhaarno, email, dailyrunning } = req.body;
 
-    if (!name || !phone) {
-        return res.status(400).send({ error: 'Name and phone are required.' });
-    }
+        if (!name || !phone) {
+            return res.status(400).send({ error: 'Name and phone are required.' });
+        }
 
-    if (req.files && req.files.length > 0) {
-        try {
+        if (req.files && req.files.length > 0) {
+
+            const userInfo = await User.findOne({ phone, isParticipated: true });
+
+            if (userInfo) {
+                throw new Error('You have already participated');
+            }
             // Array to hold image URLs
             const imageUrls = [];
 
@@ -32,24 +40,60 @@ const uploadMultipleImages = async (req, res) => {
 
             await user.save();
 
-            res.send({
+            return res.send({
                 msg: 'Images uploaded successfully',
                 user: user,
             });
-        } catch (error) {
-            console.log('Error uploading images or saving user data:', error);
-            res.status(500).send({
-                error: 'Failed to upload images or save user data',
+
+        } else {
+            return res.status(400).send({
+                error: 'No images provided',
             });
         }
-    } else {
-        res.status(400).send({
-            error: 'No images provided',
+    } catch (error) {
+        console.log('Error uploading images or saving user data:', error.message);
+        //     throw new ApiError(400, error.message);
+        return res.status(400).json({
+            error: error.message,
         });
     }
 };
 
-export { uploadMultipleImages };
+const updateUserRewardInfo = async (req, res) => {
+    const { userId } = req.params;
+    const { reward } = req.body;
+
+    if (!userId) {
+        throw new Error('User Id not found');
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { reward: reward, isParticipated: true });
+
+    if (!user) {
+        throw new Error('User does not exists ')
+    }
+
+    console.log(user)
+
+    return res.status(200).json({ user, message: 'User reward updated successfully' })
+};
+
+const getUserIfo = async (req, res) => {
+    const { phone } = req.params;
+
+    if (!phone) {
+        throw new Error('Phone not found');
+    }
+
+    const user = await User.findOne({ phone });
+
+    return res.status(201).json(
+        new ApiResponse(201, { user }, "User data found successfully!")
+    );
+};
+
+
+export { uploadMultipleImages, updateUserRewardInfo, getUserIfo };
 
 // import { uploadToS3 } from '../models/s3Service.js';
 // import User from '../models/user.js';

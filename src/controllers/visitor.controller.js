@@ -138,6 +138,32 @@ const updatePremiumStatus = asyncHandler(async (req, res) => {
 }
 );
 
+const updateSpinTheWheelStatus = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { reward } = req.body;
+
+    if (!userId) {
+        throw new ApiError(400, 'User Id not found');
+    }
+
+    const user = await Visitor.findByIdAndUpdate(userId, { reward: reward, spinTheWheel: true });
+
+    if (!user) {
+        throw new Error('User does not exists ');
+    }
+
+    const data = {
+        userId: user._id,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        myReferralCode: user.myReferralCode,
+        isPremiumUser: user.isPremiumUser
+    };
+
+    return res.status(200).json({ success: true, data, message: 'SpinTheWheel status updated successfully' });
+}
+);
+
 export {
-    verifyKYC, getVisitor, updateUserDetails, registerReferal, updatePremiumStatus
+    verifyKYC, getVisitor, updateUserDetails, registerReferal, updatePremiumStatus, updateSpinTheWheelStatus
 }

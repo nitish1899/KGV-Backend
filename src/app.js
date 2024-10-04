@@ -40,7 +40,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/v1/bookingkit", bookingKitRouter);
 app.use("/api/v1/kgvmitra", kgvRouter);
-app.use("/api/v1/primimum", primimumRouter);
+app.use("/api/v1/payment", primimumRouter);
 app.use("/api/wishlist", wishlistRouter);
 
 app.use('/api/wallet', walletRoutes);
@@ -63,6 +63,8 @@ app.get("/api/bikes", (req, res) => {
 app.get("/api/getkey", (req, res) =>
     res.status(200).json({ key: process.env.RAZORPAY_API_KEY })
 );
+
+app.get("/api/getRewards", (req, res) => res.status(200).json({ rewards: ['Reward 1', 'Reward 2', 'Reward 3', 'Reward 4', 'Reward 5', 'Reward 6'] }))
 
 app.use('/', (req, res) => res.json({ message: 'Welcome to the world of KGV Hybrid E-mobility' }));
 
