@@ -1,5 +1,4 @@
 
-
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import nodemailer from "nodemailer";
@@ -21,7 +20,7 @@ const checkout = asyncHandler(async (req, res) => {
     }
 
     const options = {
-        amount: Number(amount * 100), // Amount in paise
+        amount: Number(amount * 100),
         currency: "INR",
     };
 

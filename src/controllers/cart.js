@@ -18,6 +18,29 @@ const addCartItem = async (visitorId, item) => {
         existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
     }
 
+    const existingCartItem = await CartItem.findOne({
+        visitor,
+        'item.vehicleno': item.vehicleno
+    });
+
+    if (existingCartItem) {
+        await CartItem.findOneAndDelete({
+            visitor,
+            'item.vehicleno': item.vehicleno
+        });
+        const cartTotalPrice1 = Number(existingCart.totalPrice) - Number(existingCartItem.item.totalPrice);
+
+        const totalItems1 = Number(existingCart.totalItems) - 1;
+
+        // Update the cart's totalPrice with the new total
+        await Cart.findOneAndUpdate(
+            { _id: existingCart._id },
+            { totalPrice: cartTotalPrice1, totalItems: totalItems1 },
+            { new: true }
+        );
+    }
+
+
     // Create a new cart item
     const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
 
@@ -39,54 +62,65 @@ const addCartItem = async (visitorId, item) => {
 
 const addKitToCart = asyncHandler(async (req, res) => {
     const { visitorId, visitorbikedetailsId, kitId, vehicleno } = req.body;
+    console.log(req.body)
+    try {
+        await addKitToBikeDetail(kitId, vehicleno);
 
-    await addKitToBikeDetail(kitId, vehicleno);
+        if (!addKitToCart) {
+            throw new ApiError(400, 'Visitorbikedetails not found');
+        }
 
-    const [visitor, visitorbikedetails, cart] = await Promise.all([
-        Visitor.findById(visitorId), Visitorbikedetails.findById(visitorbikedetailsId).populate('kit'), Cart.findOne({ visitor: visitorId })
-    ]);
+        const [visitor, visitorbikedetails, cart] = await Promise.all([
+            Visitor.findById(visitorId), Visitorbikedetails.findById(visitorbikedetailsId).populate('kit'), Cart.findOne({ visitor: visitorId })
+        ]);
 
-    if (!visitor) {
-        throw new ApiError(400, 'User not found');
+        if (!visitor) {
+            throw new ApiError(400, 'User not found');
+        }
+
+        if (!visitorbikedetails) {
+            throw new ApiError(400, 'Visitorbikedetails not found');
+        }
+
+        const item = {
+            kit: visitorbikedetails.kit._id,
+            name: visitorbikedetails.kit.name,
+            quantity: 1,
+            addons: [],
+            kitPrice: Number(visitorbikedetails.kit.price),
+            totalPrice: Number(visitorbikedetails.kit.price),
+            vehicleno: visitorbikedetails.vehicleno,
+        }
+
+        const cartItemId = await addCartItem(visitorId, item);
+
+        // let existingCart = cart;
+
+        // // If the cart doesn't exist, create a new one with a totalPrice of 0
+        // if (!existingCart) {
+        //     existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
+        // }
+
+        // // Create a new cart item
+        // const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
+
+        // // Calculate the new total price for the cart
+        // const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
+
+        // const totalItems = Number(existingCart.totalItems) + 1;
+
+        // // Update the cart's totalPrice with the new total
+        // await Cart.findOneAndUpdate(
+        //     { _id: existingCart._id },
+        //     { totalPrice: cartTotalPrice, totalItems },
+        //     { new: true }
+        // );
+
+        return res.status(200).json({ cartItemId });
+    } catch (error) {
+        throw new ApiError(400, error.message);
     }
 
-    if (!visitorbikedetails) {
-        throw new ApiError(400, 'Visitorbikedetails not found');
-    }
-
-    const item = {
-        kit: visitorbikedetails.kit[0]._id,
-        name: visitorbikedetails.kit[0].name,
-        quantity: 1,
-        addons: [],
-        kitPrice: Number(visitorbikedetails.kit[0].price),
-        totalPrice: Number(visitorbikedetails.kit[0].price),
-        vehicleno: visitorbikedetails.vehicleno,
-    }
-    const cartItemId = await addCartItem(visitorId, item);
-    // let existingCart = cart;
-
-    // // If the cart doesn't exist, create a new one with a totalPrice of 0
-    // if (!existingCart) {
-    //     existingCart = await Cart.create({ visitor: visitorId, totalPrice: 0 });
-    // }
-
-    // // Create a new cart item
-    // const cartItem = await CartItem.create({ visitor, cart: existingCart, item });
-
-    // // Calculate the new total price for the cart
-    // const cartTotalPrice = Number(existingCart.totalPrice) + Number(item.totalPrice);
-
-    // const totalItems = Number(existingCart.totalItems) + 1;
-
-    // // Update the cart's totalPrice with the new total
-    // await Cart.findOneAndUpdate(
-    //     { _id: existingCart._id },
-    //     { totalPrice: cartTotalPrice, totalItems },
-    //     { new: true }
-    // );
-
-    return res.status(200).json({ cartItemId });
 });
 
 

@@ -1,4 +1,4 @@
-import Wallet from '../models/Wallet.js'; // Import Wallet model
+import Wallet from '../models/Wallet.js'; 
 
 export const createWallet = async (req, res) => {
     try {
@@ -14,7 +14,7 @@ export const createWallet = async (req, res) => {
       const wallet = new Wallet({
         userId,
         balance: 0, // Initial balance set to 0
-        transactions: [], // No transactions initially
+        transactions: [], 
       });
   
       // Save the wallet in the database

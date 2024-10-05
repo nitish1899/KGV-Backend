@@ -84,10 +84,7 @@ async function addKitToBikeDetail(kitId, vehicleno) {
         }
 
         // Add the kit to the bike details
-        if (!visitorBikeDetail.kit.includes(kitId)) {
-            visitorBikeDetail.kit.push(kitId);
-            await visitorBikeDetail.save();
-        }
+        await Visitorbikedetails.findOneAndUpdate({ vehicleno }, { kit });
 
         return new ApiResponse(200, {
             visitorBikeDetail,
@@ -96,9 +93,6 @@ async function addKitToBikeDetail(kitId, vehicleno) {
     } catch (error) {
         throw new ApiError(400, error.message);
     }
-
-
-
 };
 
 export {

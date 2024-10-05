@@ -107,20 +107,6 @@ const register = asyncHandler(async (req, res) => {
       }
     }
 
-    // const options3 = {
-    //   method: 'POST',
-    //   url: 'https://pureprakruti.com/api/kyc/verify/drivingLicence',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   data: { dlnumber, dob }
-    // }
-
-    // const dlResponse = await axios.request(options3);
-
-    // if (!dlResponse) {
-    //   throw new ApiError('Driving Licence verification failed');
-    // }
 
     // Hash the pin
     const hashPin = await bcrypt.hash(pin.toString(), 10);

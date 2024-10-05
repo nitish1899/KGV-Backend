@@ -39,7 +39,7 @@ const visitorbikedetailsSchema = new Schema(
         visitor: {
             type: mongoose.Schema.Types.ObjectId, ref: "Visitor"
         },
-        kit: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Kit' }],
+        kit: { type: mongoose.Schema.Types.ObjectId, ref: 'Kit' },
     },
     {
         timestamps: true

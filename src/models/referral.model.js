@@ -9,7 +9,7 @@ const referralSchema = new Schema({
     },
     referrer: {
         type: Schema.Types.ObjectId,
-        ref: 'Visitor',  // Assuming 'User' is the model for users in your app
+        ref: 'Visitor',  
         required: true
     },
     referredUser: {
