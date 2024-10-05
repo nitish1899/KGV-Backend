@@ -51,82 +51,106 @@ import { deleteCartItem } from "./cart.js";
 //     });
 // });
 
-cron.schedule('*/45 * * * *', async () => {
+cron.schedule('* * * * *', async () => {
+    const batchSize = 100;  // Define batch size
+    let lastId = null;  // To store the last processed item's _id
+    let hasMoreData = true;  // Flag to check if there are more items to process
+
     try {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-        // Fetch and group cart items by visitor
-        const groupedCartItems = await CartItem.aggregate([
-            {
-                $match: {
-                    updatedAt: { $lte: sevenDaysAgo } // Filter items updated in the last 7 days
-                }
-            },
-            {
-                $group: {
-                    _id: "$visitor", // Group by visitor field
-                    items: { $push: "$$ROOT" }, // Collect all cart items for each visitor
+        while (hasMoreData) {
+            // Fetch and group cart items by visitor in batches
+            const groupedCartItems = await CartItem.aggregate([
+                {
+                    $match: {
+                        updatedAt: { $lte: sevenDaysAgo }, // Filter items updated 7 or more days ago
+                        ...(lastId && { _id: { $gt: lastId } })  // Fetch items greater than the last processed item
+                    }
                 },
-            },
-        ]);
+                {
+                    $group: {
+                        _id: "$visitor", // Group by visitor field
+                        items: { $push: "$$ROOT" }, // Collect all cart items for each visitor
+                    },
+                },
+                { $sort: { _id: 1 } },  // Sort by _id to ensure proper batch order
+                { $limit: batchSize },  // Limit the batch size
+            ], { maxTimeMS: 20000 });  // Set timeout to 20 seconds
 
-        // Prepare bulk operations for Wishlist and Cart updates
-        const wishlistOperations = [];
-        const cartOperations = [];
-        const cartItemDeletions = [];
+            // If the batch is empty, break out of the loop
+            if (groupedCartItems.length === 0) {
+                hasMoreData = false;
+                break;
+            }
 
-        // Loop through each group (each visitor)
-        groupedCartItems.forEach((group) => {
-            const visitorId = group._id;
-            const items = group.items;
+            // Log the fetched batch for debugging
+            console.log(`Fetched batch of ${groupedCartItems.length} cart items`);
 
-            // Insert items into Wishlist
-            wishlistOperations.push(
-                ...items.map(item => ({
-                    visitor: item.visitor,
-                    item: item.item,
-                }))
-            );
+            // Prepare bulk operations for Wishlist, Cart updates, and CartItem deletions
+            const wishlistOperations = [];
+            const cartOperations = [];
+            const cartItemDeletions = [];
 
-            // Calculate total price and update cart
-            const totalAmount = items.reduce((sum, item) => sum + item.item.totalPrice, 0);
-            cartOperations.push({
-                updateOne: {
-                    filter: { visitor: visitorId },
-                    update: {
-                        $inc: {
-                            totalPrice: -totalAmount, // Decrease total price by totalAmount
-                            totalItems: -items.length, // Decrease total items count
+            // Process each group of cart items by visitor
+            groupedCartItems.forEach((group) => {
+                const visitorId = group._id;
+                const items = group.items;
+
+                // Insert items into Wishlist
+                wishlistOperations.push(
+                    ...items.map(item => ({
+                        visitor: item.visitor,
+                        item: item.item,
+                    }))
+                );
+
+                // Calculate total price and update cart
+                const totalAmount = items.reduce((sum, item) => sum + item.item.totalPrice, 0);
+                cartOperations.push({
+                    updateOne: {
+                        filter: { visitor: visitorId },
+                        update: {
+                            $inc: {
+                                totalPrice: -totalAmount, // Decrease total price by totalAmount
+                                totalItems: -items.length, // Decrease total items count
+                            }
                         }
                     }
-                }
+                });
+
+                // Prepare for deletion from CartItem collection
+                cartItemDeletions.push(...items.map(item => item._id));
             });
 
-            // Prepare for deletion from CartItem collection
-            cartItemDeletions.push(...items.map(item => item._id));
-        });
+            // Bulk insert into Wishlist
+            if (wishlistOperations.length > 0) {
+                await Wishlist.insertMany(wishlistOperations);
+            }
 
-        // Bulk insert into Wishlist
-        if (wishlistOperations.length > 0) {
-            await Wishlist.insertMany(wishlistOperations);
+            // Bulk update Cart for each visitor
+            if (cartOperations.length > 0) {
+                await Cart.bulkWrite(cartOperations);
+            }
+
+            // Bulk delete CartItems
+            if (cartItemDeletions.length > 0) {
+                await CartItem.deleteMany({ _id: { $in: cartItemDeletions } });
+            }
+
+            console.log("Cart items moved to wishlist and cart updated for current batch.");
+
+            // Update lastId to the last item of the current batch
+            lastId = groupedCartItems[groupedCartItems.length - 1]._id;
         }
 
-        // Bulk update Cart for each visitor
-        if (cartOperations.length > 0) {
-            await Cart.bulkWrite(cartOperations);
-        }
-
-        // Bulk delete CartItems
-        if (cartItemDeletions.length > 0) {
-            await CartItem.deleteMany({ _id: { $in: cartItemDeletions } });
-        }
-
-        console.log("Cart items moved to wishlist and cart updated successfully.");
+        console.log("All cart items moved to wishlist and cart updated successfully.");
     } catch (error) {
         console.log("Error during the cron operation:", error);
     }
 });
+
 
 const getWishlistItems = asyncHandler(async (req, res) => {
     const { visitorId } = req.params;

@@ -9,7 +9,12 @@ const connectDB = async () => {
             return connection;
         }
 
-        connection = await mongoose.connect(`${process.env.MONGODB_URI}`);
+        connection = await mongoose.connect(`${process.env.MONGODB_URI}`, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            connectTimeoutMS: 30000, // 30 seconds
+            socketTimeoutMS: 45000,  // 45 seconds
+        });
         console.log('Database Connected');
     } catch (error) {
         console.log("MONGODB connection FAILED ", error);
