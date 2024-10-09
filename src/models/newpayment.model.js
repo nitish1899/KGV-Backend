@@ -9,7 +9,7 @@ const newpaymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    dlno: {
+    vehicleno: {
         type: String,
         required: true,
     },

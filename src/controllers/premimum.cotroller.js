@@ -64,7 +64,7 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
                 razorpay_signature,
                 name: paymentDetails.notes.name || "N/A",
                 phone: paymentDetails.notes.phone || "N/A",
-                dlno: paymentDetails.notes.dlno || "N/A",
+                vehicleno: paymentDetails.notes.vehicleno || "N/A",
                 adhaarno: paymentDetails.notes.adhaarno || "N/A",
                 email: paymentDetails.notes.email || "N/A",
                 dailyrunning: paymentDetails.notes.dailyrunning || "N/A",

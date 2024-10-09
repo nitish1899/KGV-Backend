@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { uploadMultipleImages, updateUserRewardInfo, getUserIfo } from '../controllers/usercontroller.js';
+import { uploadMultipleImages, updateUserRewardInfo, getUserIfo, getExcelSheet } from '../controllers/usercontroller.js';
 
 const router = express.Router();
 
@@ -28,6 +28,7 @@ const upload = multer({
 router.post('/upload', upload.array('images'), uploadMultipleImages);
 router.post('/contest/user/:userId', updateUserRewardInfo);
 router.get('/user/:phone', getUserIfo);
+router.get('/export', getExcelSheet);
 
 export default router;
 

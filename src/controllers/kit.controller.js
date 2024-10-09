@@ -1,4 +1,3 @@
-// controllers/kit.controller.js
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Kit } from '../models/Kit.model.js';
 import { ApiError } from "../utils/ApiError.js";

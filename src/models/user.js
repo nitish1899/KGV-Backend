@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    dlno: {
+    vehicleno: {
         type: String,
         required: true,
     },
@@ -28,39 +28,9 @@ const userSchema = new mongoose.Schema({
     imageUrls: {
         type: [String],
         required: true,
-    },
-    reward: {
-        type: String,
-        required: false,
-    },
-    isParticipated: {
-        type: Boolean,
-        default: false
     }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
 
 export default User;
-
-
-// const mongoose = require('mongoose');
-
-// const userSchema = new mongoose.Schema({
-//     name: {
-//         type: String,
-//         required: true,
-//     },
-//     phone: {
-//         type: String,
-//         required: true,
-//     },
-//     imageUrls: {
-//         type: [String],
-//         required: true,
-//     },
-// }, { timestamps: true });
-
-// const User = mongoose.model('User', userSchema);
-
-// module.exports = User;
