@@ -30,6 +30,8 @@ import primimumRouter from './routes/primimum.routes.js';
 import { getbikes } from "./utils/bike.js"
 import wishlistRouter from "./routes/wishlist.route.js"
 import walletRoutes from './routes/walletRoutes.js';
+import uploadRoute from './routes/Paymentproof.route.js';
+
 
 
 //routes declaration
@@ -48,6 +50,8 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/kits', kitRoutes);
 
 app.use("/api/files", fileRoutes);
+
+app.use("/api", uploadRoute);
 
 
 app.use("/api", uploadRouter);
