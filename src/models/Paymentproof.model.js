@@ -6,7 +6,6 @@ const uploadSchema = new mongoose.Schema({
     amount: { type: Number, required: true },  // Amount for payment
     images: [String],  // Array of images (up to 4)
     createdAt: { type: Date, default: Date.now },  // Timestamp for when the record was created
-    paymentFor: { type: String, required: true },
 });
 
 const Upload = mongoose.model('Upload', uploadSchema);

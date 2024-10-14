@@ -31,8 +31,8 @@ import { getbikes } from "./utils/bike.js"
 import wishlistRouter from "./routes/wishlist.route.js"
 import walletRoutes from './routes/walletRoutes.js';
 import uploadRoute from './routes/Paymentproof.route.js';
-
-
+import contestuploadRoute from './routes/contestpayment.route.js';
+import primiumUploadRoute from './routes/PrimumUpload.route.js';
 
 //routes declaration
 app.use("/api/v1/auth", authRoutes)
@@ -53,8 +53,10 @@ app.use("/api/files", fileRoutes);
 
 app.use("/api", uploadRoute);
 
+app.use("/api", contestuploadRoute);
 
 app.use("/api", uploadRouter);
+app.use("/api", primiumUploadRoute);
 
 app.get("/api/redirect", (req, res) => {
     res.redirect('https://play.google.com/store/apps/details?id=com.tsilteam.KGVHybridSol&contest=kgvlcontest');
