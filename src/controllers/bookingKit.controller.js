@@ -9,8 +9,8 @@ import { Referral } from "../models/referral.model.js";
 import Wallet from "../models/Wallet.js";
 
 const instance = new Razorpay({
-    key_id: process.env.RAZORPAY_API_KEY,
-    key_secret: process.env.RAZORPAY_API_SECRET,
+    key_id: process.env.RAZORPAY_API_KEY2,
+    key_secret: process.env.RAZORPAY_API_SECRET2,
 });
 
 const checkout = asyncHandler(async (req, res) => {
@@ -51,7 +51,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
+            .createHmac("sha256", process.env.RAZORPAY_API_SECRET2)
             .update(body)
             .digest("hex");
 
@@ -97,8 +97,8 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
             const referral = await Referral.findOne({ referralCode, referredUser: userId }).populate('referrer');
 
-
-            if (referral && !referral?.isUsed) {
+            console.log('referral', referral);
+            if (referral && referral?.referrer && referral.referrer?.isPremiumUser && !referral?.isUsed) {
                 try {
                     // Step 1: Find or create the wallet
                     // Step 2: Update balance and add a transaction
@@ -185,7 +185,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
                 transporter.sendMail(mailOptions, function (error, info) {
                     if (error) {
-                        console.log("Email error: " + error);
+                        console.log("User Email error: " + error);
                     } else {
                         console.log("Email sent: " + info.response);
                     }
@@ -193,7 +193,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
                 transporter.sendMail(mailOptions1, function (error, info) {
                     if (error) {
-                        console.log("Email error: " + error);
+                        console.log("Team Email error: " + error);
                     } else {
                         console.log("Email sent: " + info.response);
                     }
@@ -247,7 +247,7 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
+            .createHmac("sha256", process.env.RAZORPAY_API_SECRET2)
             .update(body)
             .digest("hex");
 
@@ -381,7 +381,7 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
 
                 transporter.sendMail(mailOptions, function (error, info) {
                     if (error) {
-                        console.log("Email error: " + error);
+                        console.log("User Email error: " + error);
                     } else {
                         console.log("Email sent: " + info.response);
                     }
@@ -389,7 +389,7 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
 
                 transporter.sendMail(mailOptions1, function (error, info) {
                     if (error) {
-                        console.log("Email error: " + error);
+                        console.log("Team Email error: " + error);
                     } else {
                         console.log("Email sent: " + info.response);
                     }
@@ -443,7 +443,7 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
+            .createHmac("sha256", process.env.RAZORPAY_API_SECRET2)
             .update(body)
             .digest("hex");
 

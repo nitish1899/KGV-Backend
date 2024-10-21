@@ -11,7 +11,7 @@ const newpaymentSchema = new mongoose.Schema({
     },
     vehicleno: {
         type: String,
-        required: true,
+        required: false,
     },
     adhaarno: {
         type: String,
@@ -23,7 +23,7 @@ const newpaymentSchema = new mongoose.Schema({
     },
     dailyrunning: {
         type: String,
-        required: true,
+        required: false,
     },
     amount: {
         type: String,
