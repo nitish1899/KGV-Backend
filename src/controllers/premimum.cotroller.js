@@ -8,8 +8,8 @@ import { NewPayment } from "../models/newpayment.model.js";
 import { Visitor } from "../models/visitor.model.js";
 
 const instance = new Razorpay({
-    key_id: process.env.RAZORPAY_API_KEY,
-    key_secret: process.env.RAZORPAY_API_SECRET,
+    key_id: process.env.RAZORPAY_API_KEY2,
+    key_secret: process.env.RAZORPAY_API_SECRET2,
 });
 
 const checkout = asyncHandler(async (req, res) => {
