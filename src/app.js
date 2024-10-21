@@ -67,7 +67,7 @@ app.get("/api/bikes", (req, res) => {
 });
 
 app.get("/api/getkey", (req, res) =>
-    res.status(200).json({ key: process.env.RAZORPAY_API_KEY })
+    res.status(200).json({ key: process.env.RAZORPAY_API_KEY2 })
 );
 
 app.get("/api/getRewards", (req, res) => res.status(200).json({ rewards: ['Reward 1', 'Reward 2', 'Reward 3', 'Reward 4', 'Reward 5', 'Reward 6'] }))
