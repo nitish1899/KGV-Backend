@@ -1,31 +1,31 @@
-import Wallet from '../models/Wallet.js'; 
+import Wallet from '../models/Wallet.js';
 
 export const createWallet = async (req, res) => {
-    try {
-      const { userId } = req.body;
-  
-      // Check if the wallet already exists for the user
-      const existingWallet = await Wallet.findOne({ userId });
-      if (existingWallet) {
-        return res.status(400).json({ message: 'Wallet already exists for this user' });
-      }
-  
-      // Create a new wallet
-      const wallet = new Wallet({
-        userId,
-        balance: 0, // Initial balance set to 0
-        transactions: [], 
-      });
-  
-      // Save the wallet in the database
-      await wallet.save();
-  
-      res.status(201).json({ message: 'Wallet created successfully', wallet });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+  try {
+    const { userId } = req.body;
+
+    // Check if the wallet already exists for the user
+    const existingWallet = await Wallet.findOne({ userId });
+    if (existingWallet) {
+      return res.status(400).json({ message: 'Wallet already exists for this user' });
     }
-  };
+
+    // Create a new wallet
+    const wallet = new Wallet({
+      userId,
+      balance: 0, // Initial balance set to 0
+      transactions: [],
+    });
+
+    // Save the wallet in the database
+    await wallet.save();
+
+    res.status(201).json({ message: 'Wallet created successfully', wallet });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // Fetch wallet balance
 export const getWalletBalance = async (req, res) => {
@@ -39,7 +39,7 @@ export const getWalletBalance = async (req, res) => {
 
     res.json({ balance: wallet.balance });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -66,7 +66,7 @@ export const rechargeWallet = async (req, res) => {
 
     res.json({ balance: wallet.balance, message: 'Wallet recharged successfully' });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -97,7 +97,7 @@ export const payWithWallet = async (req, res) => {
 
     res.json({ balance: wallet.balance, message: 'Payment successful' });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -114,7 +114,7 @@ export const getTransactions = async (req, res) => {
 
     res.json({ transactions: wallet.transactions });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: 'Server error' });
   }
 };

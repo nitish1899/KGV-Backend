@@ -36,7 +36,7 @@ const uploadToS3 = async (buffer, fileName) => {
         const s3Data = await s3.upload(params).promise();
         return s3Data;
     } catch (error) {
-        console.error("Error uploading to S3:", error); // Improved error logging
+        console.log("Error uploading to S3:", error); // Improved error logging
         throw error; // Re-throw error to be handled in the calling function
     }
 };
@@ -82,7 +82,7 @@ export const uploadImages = async (req, res) => {
             });
 
         } catch (error) {
-            console.error("Error in uploadImages:", error); // Log error for debugging
+            console.log("Error in uploadImages:", error); // Log error for debugging
             res.status(500).json({ message: 'Server error', error });
         }
     });
