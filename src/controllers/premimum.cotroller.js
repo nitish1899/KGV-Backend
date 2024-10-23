@@ -30,7 +30,7 @@ const checkout = asyncHandler(async (req, res) => {
 
 const contestPaymentVerification = asyncHandler(async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, notes } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             throw new ApiError(400, "Missing required fields");
@@ -62,31 +62,31 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                name: paymentDetails.notes.name || "N/A",
-                phone: paymentDetails.notes.phone || "N/A",
-                vehicleno: paymentDetails.notes.vehicleno || "N/A",
-                adhaarno: paymentDetails.notes.adhaarno || "N/A",
-                email: paymentDetails.notes.email || "N/A",
-                dailyrunning: paymentDetails.notes.dailyrunning || "N/A",
-                amount: Number(paymentDetails.amount) / 100 || "N/A",
+                name: notes.name || "N/A",
+                phone: notes.phone || "N/A",
+                vehicleno: notes.vehicleno || "N/A",
+                adhaarno: notes.adhaarno || "N/A",
+                email: notes.email || "N/A",
+                dailyrunning: notes.dailyrunning || "N/A",
+                amount: Number(notes.amount) / 100 || "N/A",
             });
 
             function sendEmailNotification() {
                 const mailOptions = {
                     from: process.env.SENDER_EMAIL,
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Your contest participation- Payment Successful",
                     html: `
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">Contest Participation Payment Confirmation</h2>
-                            <p>Dear ${paymentDetails.notes.name},</p>
+                            <p>Dear ${notes.name},</p>
 
                             <p>Thank you for participating in contest! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
 
                             <h3 style="color: #333;">Contest Participation Payment Details</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.name}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phone}</p>
+                            <p><strong>Full Name:</strong> ${notes.name}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phone}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -116,9 +116,9 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
                             <p>A new customer has just completed a booking. Below are the details:</p>
 
                             <h3 style="color: #333;">Customer Information</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.name}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phone}</p>
+                            <p><strong>Full Name:</strong> ${notes.name}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phone}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -161,7 +161,7 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Customer booking Detail",
                     html: `<p>New registration details:</p>
                                        <p>Payment failed</p>
@@ -193,7 +193,7 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
 
 const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, notes } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             throw new ApiError(400, "Missing required fields");
@@ -218,40 +218,40 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
         });
 
         if (isAuthentic) {
-            const paymentDetails = await instance.payments.fetch(razorpay_payment_id);
-            console.log('paymentDetails', paymentDetails);
+            // const paymentDetails = await instance.payments.fetch(razorpay_payment_id);
+            // console.log('paymentDetails', paymentDetails);
 
-            await Visitor.findOneAndUpdate({ phoneNumber: paymentDetails.notes.phoneNumber }, { isPremiumUser: true });
+            await Visitor.findOneAndUpdate({ phoneNumber: notes.phoneNumber }, { isPremiumUser: true });
 
             await NewPayment.create({
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                name: paymentDetails.notes.fullName || "N/A",
-                phone: paymentDetails.notes.phoneNumber || "N/A",
-                dlno: paymentDetails.notes.dlno || "N/A",
-                adhaarno: paymentDetails.notes.adhaarno || "N/A",
-                email: paymentDetails.notes.email || "N/A",
-                amount: Number(paymentDetails.amount) / 100 || "N/A",
+                name: notes.fullName || "N/A",
+                phone: notes.phoneNumber || "N/A",
+                dlno: notes.dlno || "N/A",
+                adhaarno: notes.adhaarno || "N/A",
+                email: notes.email || "N/A",
+                amount: Number(notes.amount) / 100 || "N/A",
             });
 
             function sendEmailNotification() {
                 const mailOptions = {
                     from: process.env.SENDER_EMAIL,
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Upgrade to KGV Mitra Club",
                     html: `
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">KGV Mitra Club Membership Confirmation</h2>
-                            <p>Dear ${paymentDetails.notes.fullName},</p>
+                            <p>Dear ${notes.fullName},</p>
 
                             <p>Thank you for your upgrading to premium with us! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
 
                             <h3 style="color: #333;">Premium User Details</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -281,9 +281,9 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
                             <p>A new customer has just completed a premium purchase. Below are the details:</p>
 
                             <h3 style="color: #333;">Customer Information</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -326,7 +326,7 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Premium purchase details",
                     html: `<p>New premium purchase details:</p>
                                        <p>Payment failed</p>

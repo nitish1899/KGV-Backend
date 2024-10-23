@@ -39,7 +39,14 @@ const visitorbikedetailsSchema = new Schema(
         visitor: {
             type: mongoose.Schema.Types.ObjectId, ref: "Visitor"
         },
-        kit: { type: mongoose.Schema.Types.ObjectId, ref: 'Kit' },
+        kit: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Kit'
+        },
+        isKitBooked: {
+            type: Boolean,
+            default: false
+        },
     },
     {
         timestamps: true

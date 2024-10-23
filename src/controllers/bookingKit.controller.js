@@ -7,6 +7,7 @@ import { Payment } from "../models/payment.model.js";
 import crypto from "crypto";
 import { Referral } from "../models/referral.model.js";
 import Wallet from "../models/Wallet.js";
+import { Visitorbikedetails } from "../models/visitorbikedetails.model.js";
 
 const instance = new Razorpay({
     key_id: process.env.RAZORPAY_API_KEY2,
@@ -43,7 +44,7 @@ const checkout = asyncHandler(async (req, res) => {
 
 const bookingVerification = asyncHandler(async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, referralCode, userId } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, referralCode, userId, notes } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             throw new ApiError(400, "Missing required fields");
@@ -72,7 +73,6 @@ const bookingVerification = asyncHandler(async (req, res) => {
         });
 
         if (isAuthentic) {
-            const paymentDetails = await instance.payments.fetch(razorpay_payment_id);
 
             // console.log("paymentDetails:", paymentDetails);
 
@@ -81,23 +81,22 @@ const bookingVerification = asyncHandler(async (req, res) => {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                fullName: paymentDetails.notes.fullName || 'N/A',
-                phoneNumber: paymentDetails.notes.phoneNumber || 'N/A',
-                address: paymentDetails.notes.address || 'N/A',
-                aadhar: paymentDetails.notes.aadhar || 'N/A',
-                dlno: paymentDetails.notes.dlno || 'N/A',
-                dob: paymentDetails.notes.dob || 'N/A',
-                gender: paymentDetails.notes.gender || 'N/A',
-                email: paymentDetails.notes.email || 'N/A',
-                pan: paymentDetails.notes.pan || 'N/A',
-                amount: paymentDetails.notes.amount || 'N/A',
+                fullName: notes.fullName || 'N/A',
+                phoneNumber: notes.phoneNumber || 'N/A',
+                address: notes.address || 'N/A',
+                aadhar: notes.aadhar || 'N/A',
+                dlno: notes.dlno || 'N/A',
+                dob: notes.dob || 'N/A',
+                gender: notes.gender || 'N/A',
+                email: notes.email || 'N/A',
+                pan: notes.pan || 'N/A',
+                amount: notes.amount || 'N/A',
             });
 
             await bookingKit.save();
 
             const referral = await Referral.findOne({ referralCode, referredUser: userId }).populate('referrer');
 
-            console.log('referral', referral);
             if (referral && referral?.referrer && referral.referrer?.isPremiumUser && !referral?.isUsed) {
                 try {
                     // Step 1: Find or create the wallet
@@ -115,23 +114,29 @@ const bookingVerification = asyncHandler(async (req, res) => {
                 }
             }
 
+            await Visitorbikedetails.updateMany(
+                { vehicleno: { $in: notes.vehiclenos } }, // Find documents where 'vehicleno' matches any value in the 'notes.vehiclenos' array
+                { $set: { isKitBooked: true } }, // Update 'isKitBooked' to true
+                { new: true } // Optionally return the updated document
+            );
+
             function sendEmailNotification() {
                 const mailOptions = {
                     from: process.env.SENDER_EMAIL,
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Your Booking Confirmation - Payment Successful",
                     html: `
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">Booking Confirmation</h2>
-                            <p>Dear ${paymentDetails.notes.fullName},</p>
+                            <p>Dear ${notes.fullName},</p>
 
                             <p>Thank you for your booking with us! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
 
                             <h3 style="color: #333;">Booking Details</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -162,10 +167,10 @@ const bookingVerification = asyncHandler(async (req, res) => {
                             <p>A new customer has just completed a booking. Below are the details:</p>
 
                             <h3 style="color: #333;">Customer Information</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -208,7 +213,7 @@ const bookingVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Customer booking Detail",
                     html: `<p>New registration details:</p>
                                        <p>Payment failed</p>
@@ -277,16 +282,16 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                fullName: paymentDetails.notes.fullName || 'N/A',
-                phoneNumber: paymentDetails.notes.phoneNumber || 'N/A',
-                address: paymentDetails.notes.address || 'N/A',
-                aadhar: paymentDetails.notes.aadhar || 'N/A',
-                dlno: paymentDetails.notes.dlno || 'N/A',
-                dob: paymentDetails.notes.dob || 'N/A',
-                gender: paymentDetails.notes.gender || 'N/A',
-                email: paymentDetails.notes.email || 'N/A',
-                pan: paymentDetails.notes.pan || 'N/A',
-                amount: paymentDetails.notes.amount || 'N/A',
+                fullName: notes.fullName || 'N/A',
+                phoneNumber: notes.phoneNumber || 'N/A',
+                address: notes.address || 'N/A',
+                aadhar: notes.aadhar || 'N/A',
+                dlno: notes.dlno || 'N/A',
+                dob: notes.dob || 'N/A',
+                gender: notes.gender || 'N/A',
+                email: notes.email || 'N/A',
+                pan: notes.pan || 'N/A',
+                amount: notes.amount || 'N/A',
             });
 
             await bookingKit.save();
@@ -314,20 +319,20 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
             function sendEmailNotification() {
                 const mailOptions = {
                     from: process.env.SENDER_EMAIL,
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Your upgrade to premium - Payment Successful",
                     html: `
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">Booking Confirmation</h2>
-                            <p>Dear ${paymentDetails.notes.fullName},</p>
+                            <p>Dear ${notes.fullName},</p>
 
                             <p>Thank you for your upgrading to premium with us! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
 
                             <h3 style="color: #333;">Booking Details</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -358,10 +363,10 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
                             <p>A new customer has just completed a premium purchase. Below are the details:</p>
 
                             <h3 style="color: #333;">Customer Information</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -404,7 +409,7 @@ const premiumUserPaymentVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Premium purchase details",
                     html: `<p>New premium purchase details:</p>
                                        <p>Payment failed</p>
@@ -473,16 +478,16 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                fullName: paymentDetails.notes.fullName || 'N/A',
-                phoneNumber: paymentDetails.notes.phoneNumber || 'N/A',
-                address: paymentDetails.notes.address || 'N/A',
-                aadhar: paymentDetails.notes.aadhar || 'N/A',
-                dlno: paymentDetails.notes.dlno || 'N/A',
-                dob: paymentDetails.notes.dob || 'N/A',
-                gender: paymentDetails.notes.gender || 'N/A',
-                email: paymentDetails.notes.email || 'N/A',
-                pan: paymentDetails.notes.pan || 'N/A',
-                amount: paymentDetails.notes.amount || 'N/A',
+                fullName: notes.fullName || 'N/A',
+                phoneNumber: notes.phoneNumber || 'N/A',
+                address: notes.address || 'N/A',
+                aadhar: notes.aadhar || 'N/A',
+                dlno: notes.dlno || 'N/A',
+                dob: notes.dob || 'N/A',
+                gender: notes.gender || 'N/A',
+                email: notes.email || 'N/A',
+                pan: notes.pan || 'N/A',
+                amount: notes.amount || 'N/A',
             });
 
             await bookingKit.save();
@@ -510,20 +515,20 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
             function sendEmailNotification() {
                 const mailOptions = {
                     from: process.env.SENDER_EMAIL,
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Your contest participation- Payment Successful",
                     html: `
                         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                             <h2 style="color: #4CAF50;">Contest Participation Payment Confirmation</h2>
-                            <p>Dear ${paymentDetails.notes.fullName},</p>
+                            <p>Dear ${notes.fullName},</p>
 
                             <p>Thank you for participating in contest! We are pleased to confirm that your payment has been successfully processed. Below are the details of your transaction:</p>
 
                             <h3 style="color: #333;">Contest Participation Payment Details</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -554,10 +559,10 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
                             <p>A new customer has just completed a booking. Below are the details:</p>
 
                             <h3 style="color: #333;">Customer Information</h3>
-                            <p><strong>Full Name:</strong> ${paymentDetails.notes.fullName}</p>
-                            <p><strong>Email:</strong> ${paymentDetails.notes.email}</p>
-                            <p><strong>Address:</strong> ${paymentDetails.notes.address}</p>
-                            <p><strong>Phone No.:</strong> ${paymentDetails.notes.phoneNumber}</p>
+                            <p><strong>Full Name:</strong> ${notes.fullName}</p>
+                            <p><strong>Email:</strong> ${notes.email}</p>
+                            <p><strong>Address:</strong> ${notes.address}</p>
+                            <p><strong>Phone No.:</strong> ${notes.phoneNumber}</p>
 
                             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
@@ -600,7 +605,7 @@ const contestPaymentVerification = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: "team@kgvl.co.in",
-                    to: `${paymentDetails.notes.email}`,
+                    to: `${notes.email}`,
                     subject: "Customer booking Detail",
                     html: `<p>New registration details:</p>
                                        <p>Payment failed</p>

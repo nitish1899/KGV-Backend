@@ -16,13 +16,15 @@ const createVisitorBikeDetail = asyncHandler(async (req, res) => {
     // Check if the bike details already exist
     const [existingDetail, visitor] = await Promise.all(
         [
-            Visitorbikedetails.findOne({ vehicleno }),
+            Visitorbikedetails.findOne({ vehicleno, isKitBooked: true }),
             Visitor.findOne({ _id: visitorId })
         ]);
 
     if (existingDetail) {
-        throw new ApiError(409, "Bike details with this vehicle number already exist");
+        throw new ApiError(409, "The kit has already been booked for this vehicle. Please use another vehicle number.");
     }
+
+    await Visitorbikedetails.findOneAndDelete({ vehicleno });
 
     // Create the visitor bike detail
     const visitorBikeDetail = await Visitorbikedetails.create({
